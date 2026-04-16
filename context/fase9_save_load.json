@@ -1,9 +1,22 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 9: SAVE/LOAD SYSTEM - Complete Research",
   "description": "Game state serialization, IndexedDB storage, multiple slots, auto-save and version migration",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 10,
+    "agents": [
+      "Serialization",
+      "IndexedDB Storage",
+      "Save Slots",
+      "Auto Save",
+      "Quick Save",
+      "Version Migration",
+      "Save Validation",
+      "Save Menu UI",
+      "Compression",
+      "State Rehydration"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - Save-game editing",
       "MDN - IndexedDB API",
@@ -400,6 +413,45 @@
           "rehydration": "importRootStateListener para reidratar stores ao carregar"
         }
       }
+    },
+
+    "state_validation": {
+      "integrity_checks": {
+        "json_parse": "Validar JSON parse",
+        "required_fields": "Verificar campos obrigatórios",
+        "data_types": "Validar tipos de dados",
+        "value_ranges": "Verificar valores em ranges válidos",
+        "references": "Validar referências entre entidades"
+      },
+      "consistency": {
+        "economy": "Balanced production/consumption",
+        "population": "Sum of pops equals total",
+        "territory": "All provinces assigned"
+      }
+    },
+
+    "save_optimization": {
+      "delta_saving": {
+        "description": "Save only changes since last save",
+        "full_save_interval": "Weekly",
+        "delta_frequency": "Daily",
+        "reconstruction": "Apply deltas to last full save"
+      },
+      "lazy_serialization": {
+        "description": "Serialize large data on demand",
+        "example": "Map terrain only when needed"
+      },
+      "chunking": {
+        "description": "Split save into chunks",
+        "benefit": "Load faster, less memory spike"
+      }
+    },
+
+    "corruption_recovery": {
+      "automatic_backup": "Keep last 3 saves per slot",
+      "manual_recovery": "Allow loading corrupted with data recovery",
+      "version_fallback": "Load with old game version",
+      "logging": "Log errors for analysis"
     },
     "ironman_mode": {
       "nome": "Ironman Mode (Future)",

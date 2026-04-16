@@ -11,12 +11,12 @@ export class TilemapRenderer {
     this.scene = scene
     this.mapData = mapData
     this.terrainColors = new Map([
-      [TerrainType.GRASS, 0x4a7c59],
-      [TerrainType.WATER, 0x3d5a80],
-      [TerrainType.MOUNTAIN, 0x6b6b6b],
+      [TerrainType.PLAINS, 0x4a7c59],
+      [TerrainType.OCEAN, 0x3d5a80],
+      [TerrainType.MOUNTAINS, 0x6b6b6b],
       [TerrainType.FOREST, 0x2d5a27],
       [TerrainType.DESERT, 0xd4a373],
-      [TerrainType.ROCK, 0x4a4a4a],
+      [TerrainType.HILLS, 0x6b6b6b],
     ])
   }
 

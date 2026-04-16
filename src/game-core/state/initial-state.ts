@@ -68,12 +68,12 @@ function perlinNoise(x: number, y: number, perm: number[]): number {
 }
 
 function determineTerrain(elevation: number, moisture: number): TerrainType {
-  if (elevation < -0.3) return TerrainType.WATER
-  if (elevation < -0.1) return TerrainType.GRASS
-  if (elevation > 0.6) return TerrainType.MOUNTAIN
+  if (elevation < -0.3) return TerrainType.OCEAN
+  if (elevation < -0.1) return TerrainType.PLAINS
+  if (elevation > 0.6) return TerrainType.MOUNTAINS
   if (moisture > 0.5) return TerrainType.FOREST
   if (moisture < -0.3) return TerrainType.DESERT
-  return TerrainType.GRASS
+  return TerrainType.PLAINS
 }
 
 export function generateInitialMapData(seed: number = 12345): MapData {

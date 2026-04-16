@@ -1,9 +1,24 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 10: OPTIMIZATION & PERFORMANCE - Complete Research",
   "description": "WebGL/Phaser 4 optimization, memory management, mobile support, bug fixes and balancing",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 12,
+    "agents": [
+      "WebGL Performance",
+      "Memory Management",
+      "Mobile Optimization",
+      "Game Loop Optimization",
+      "Asset Optimization",
+      "Network Optimization",
+      "Debugging Tools",
+      "Bug Tracking",
+      "Balance Tuning",
+      "GPU Instancing",
+      "Shader Optimization",
+      "Profiling Checklist"
+    ],
     "web_sources": [
       "Phaser 4 Rendering Concepts",
       "JavaScript Gaming News - Phaser 4 Optimization"
@@ -344,6 +359,118 @@
         "✅ Delta time é consistente",
         "✅ Draw calls otimizados"
       ]
+    }
+  },
+
+  "gpu_instancing": {
+    "description": "Renderizar milhares de objetos similares com uma chamada de draw",
+    "implementation": {
+      "phaser_4": "InstancedSprite API para objetos idênticos",
+      "use_cases": ["Unidades militares", "Partículas", "Árvores", "Edifícios"]
+    },
+    "performance_gain": {
+      "10k_objects": "58-60 FPS vs 45-55 FPS",
+      "50k_objects": "45-55 FPS vs 15-20 FPS"
+    }
+  },
+
+  "shader_optimization": {
+    "vertex_shader": {
+      "use_for": "Movement, position updates on GPU",
+      "benefit": "Reduce CPU load for animated objects"
+    },
+    "fragment_shader": {
+      "avoid_branching": "Use step/lerp instead of if",
+      "cache_uniforms": "Don't update uniforms that don't change"
+    },
+    "custom_shaders": {
+      "terrain": "Procedural terrain blending",
+      "effects": "Bloom, color grading, weather"
+    }
+  },
+
+  "render_batching": {
+    "batch_size": {
+      "default": 16384,
+      "adjust": "Based on device capability"
+    },
+    "texture_atlas": {
+      "description": "Single texture with multiple images",
+      "benefit": "Drastically reduce draw calls",
+      "tool": "TexturePacker, Shoebox"
+    },
+    "sorting": {
+      "optimal": "Group similar objects together",
+      "depth_sorting": "Z-order for transparency"
+    }
+  },
+
+  "memory_pools": {
+    "object_pooling": {
+      "description": "Reuse objects instead of create/destroy",
+      "implement": "Pre-allocate arrays, reuse on death/spawn"
+    },
+    "vector_pooling": {
+      "description": "Reuse Phaser.Math.Vector2",
+      "pattern": "Single reused instance for calculations"
+    },
+    "texture_pooling": {
+      "description": "Cache loaded textures",
+      "eviction": "LRU when memory threshold reached"
+    }
+  },
+
+  "simulation_culling": {
+    "spatial_culling": {
+      "description": "Don't calculate for off-screen regions",
+      "implementation": "Check viewport bounds before update"
+    },
+    "temporal_culling": {
+      "description": "Skip frames for distant objects",
+      "threshold": "Objects < 5% screen size update less"
+    },
+    "lod_systems": {
+      "description": "Different detail levels based on distance",
+      "pops": "Aggregate pop data for distant states",
+      "buildings": "Single sprite for far, detailed for close"
+    }
+  },
+
+  "mobile_specific": {
+    "adaptive_quality": {
+      "low": "Canvas renderer, reduced particles, smaller textures",
+      "medium": "WebGL basic, medium particles",
+      "high": "WebGPU, all effects, full textures"
+    },
+    "device_detection": {
+      "gpu_tier": "Low/Medium/High based on benchmark",
+      "memory_limit": "Detect available RAM",
+      "thermal_throttling": "Detect and reduce FPS"
+    },
+    "battery_optimization": {
+      "reduce_background": "Pause when tab hidden",
+      "target_fps": "30 FPS when low battery",
+      "particle_limit": "Fewer particles on mobile"
+    }
+  },
+
+  "performance_monitoring": {
+    "metrics": {
+      "fps": "Target 60, acceptable 30",
+      "frame_time": "Target <16.67ms",
+      "memory": "Track heap size",
+      "draw_calls": "Minimize for performance"
+    },
+    "debug_overlay": {
+      "fps_counter": "Always visible",
+      "memory_usage": "Toggle with hotkey",
+      "entity_count": "Show active entities",
+      "draw_call_count": "For debugging"
+    },
+    "auto_tuning": {
+      "detection": "Drop below 45 FPS for 5 sec",
+      "action": "Reduce quality automatically",
+      "notification": "Inform player of change"
     }
   },
   "expansoes_futuras": [

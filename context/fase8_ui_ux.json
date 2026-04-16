@@ -1,9 +1,27 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 8: UI/UX INTERFACE - Complete Research",
   "description": "UI/UX complete Victoria 3 style - panels, bars, menus, interactions",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 12,
+    "agents": [
+      "Map UI Elements",
+      "Top Bar",
+      "Left Side Bar",
+      "Lenses Panel",
+      "Economy Panel",
+      "Buildings Panel",
+      "Population Panel",
+      "Politics Panel",
+      "Technology Panel",
+      "Diplomacy Panel",
+      "Menus",
+      "Pan/Zoom Controls",
+      "Minimap Implementation",
+      "Province Tooltips",
+      "Map Overlays"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - User Interface",
       "Gamepressure - Game Interface",
@@ -457,6 +475,136 @@
           "militaryStore"
         ]
       }
+    }
+  },
+
+  "advanced_controls": {
+    "pan_zoom": {
+      "screen_edge_panning": {
+        "description": "Detect mouse near screen edges and pan camera",
+        "detection_zone": "50-100 pixels from edge",
+        "customization": "Player-adjustable sensitivity"
+      },
+      "keyboard_controls": {
+        "wasd": "Pan directions",
+        "arrows": "Alternative pan",
+        "plus_minus": "Zoom in/out",
+        "home": "Center on capital",
+        "space": "Toggle follow selection"
+      },
+      "mouse_controls": {
+        "drag": "Left-click drag to pan",
+        "wheel": "Scroll to zoom",
+        "double_click": "Center and zoom to province",
+        "right_drag": "Rotate (optional)"
+      },
+      "touch_controls": {
+        "single_finger_drag": "Pan",
+        "pinch": "Zoom",
+        "two_finger_drag": "Rotate",
+        "tap": "Select",
+        "long_press": "Context menu"
+      },
+      "smooth_movement": {
+        "lerp": "Linear interpolation for smooth camera",
+        "inertia": "Momentum after release",
+        "bounds": "Soft bounce at map edges"
+      }
+    },
+    "minimap": {
+      "implementation": "Secondary camera rendering to small viewport",
+      "features": [
+        "Viewport rectangle showing current view",
+        "Click to teleport",
+        "Zoom level indicator",
+        "Toggle layers"
+      ],
+      "performance": "Update at lower framerate than main view"
+    },
+    "keyboard_shortcuts": {
+      "system": {
+        "f1_f10": "Panel tabs",
+        "shift_f1": "Outliner",
+        "q": "Map list",
+        "tab": "World overview",
+        "esc": "Pause menu"
+      },
+      "game": {
+        "space": "Pause/Resume",
+        "1_2_3_5": "Game speed",
+        "f5": "Quick save",
+        "f9": "Quick load"
+      }
+    }
+  },
+
+  "tooltips_system": {
+    "province_tooltip": {
+      "trigger": "Hover 200ms delay",
+      "content": {
+        "basic": ["Province name", "Owner", "Terrain type"],
+        "resource": ["Resources", "Arable land", "Resource potential"],
+        "population": ["Total pop", "Pop types", "SOL"],
+        "economic": ["GDP contribution", "Buildings", "Market access"]
+      },
+      "nested": "Click to expand more details"
+    },
+    "building_tooltip": {
+      "content": ["Name", "Level", "Workers", "Inputs", "Outputs", "Profit"]
+    },
+    "pop_tooltip": {
+      "content": ["Culture", "Religion", "Profession", "SOL", "Needs satisfaction"]
+    },
+    "implementation": {
+      "positioning": "Follow cursor with offset",
+      "culling": "Don't show if off-screen",
+      "pooling": "Reuse tooltip objects"
+    }
+  },
+
+  "map_overlays": {
+    "lens_system": {
+      "production_lens": {
+        "overlay": "Resources by state",
+        "colors": "By good type produced"
+      },
+      "political_lens": {
+        "overlay": "Owner colors",
+        "additional": "IG control, state ownership"
+      },
+      "diplomatic_lens": {
+        "overlay": "Relations matrix",
+        "colors": "Attitude toward player"
+      },
+      "military_lens": {
+        "overlay": "Unit positions",
+        "additional": "Fortification levels, front lines"
+      },
+      "implementation": "Tilemap tinting or Graphics overlay per lens"
+    },
+    "heatmap_options": {
+      "sol": "Standard of living gradient",
+      "population": "Population density",
+      "literacy": "Literacy rate",
+      "gdp": "Economic output",
+      "culture": "Cultural distribution"
+    }
+  },
+
+  "responsive_patterns": {
+    "aspect_ratio": {
+      "ultrawide": "21:9 - extra side panel space",
+      "standard": "16:9 - baseline",
+      "mobile": "9:16 - vertical layout"
+    },
+    "scaling": {
+      "ui_scale": "Player-adjustable UI size",
+      "auto_detect": "Based on resolution"
+    },
+    "accessibility": {
+      "color_blind": "Alternative color schemes",
+      "high_contrast": "High contrast mode",
+      "font_size": "Scalable text"
     }
   },
   "expansoes_futuras": [

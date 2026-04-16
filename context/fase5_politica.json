@@ -1,9 +1,27 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 5: POLITICS - Complete Research with Web Sources",
   "description": "Weeks 21-26 - Playable political system. Research compiled from web sources with detailed implementation.",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 15,
+    "agents": [
+      "Government Types",
+      "Laws System",
+      "Law Enactment",
+      "Legitimacy",
+      "Interest Groups",
+      "Political Influence",
+      "Ideologies",
+      "Elections",
+      "Voting Systems",
+      "Ruler Generation",
+      "Revolutionary Mechanics",
+      "Institution System",
+      "Government Formation",
+      "Political Reform",
+      "Ideology Formation"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - Government",
       "Victoria 3 Wiki - Laws",
@@ -364,6 +382,79 @@
           "government_change": "Update IG government status"
         }
       }
+  },
+
+  "5_9_legitimacy_detailed": {
+    "title": "5.9 Legitimacy Calculation (Detailed)",
+    "research": {
+      "web_definition": {
+        "what_is": "How accepted the government's rule is. Affects stability, reform speed, military loyalty.",
+        "what_exists": "Range 0-100 with thresholds affecting gameplay"
+      },
+      "thresholds": {
+        "illegitimate": "0-24: -3 law speed, +50% opposition, +3% radical/month",
+        "unacceptable": "25-49: +50% law time, -2 opposition/month",
+        "contested": "50-74: -1 law time",
+        "legitimate": "75-89: +25% law speed",
+        "righteous": "90-100: +25% law speed, +33% opposition"
+      },
+      "calculation": {
+        "base": "Government IG clout × 0.8",
+        "electoral": "+ vote_share × 20 (democracies)",
+        "size_penalty": "-20 per group above government size allowance",
+        "ideology_penalty": "-5 × clout × 0.01 per opposing law stance"
+      },
+      "sources": ["War success/failure", "Economic growth", "Reforms", "Events"]
+    }
+  },
+
+  "5_10_institution_system": {
+    "title": "5.10 Institution System (Detailed)",
+    "research": {
+      "web_definition": {
+        "what_is": "Persistent structures shaping state function - bureaucracies, legal systems, education, etc.",
+        "what_exists": "Can be embraced (provide bonuses) or ignored (incur penalties)"
+      },
+      "institutions": {
+        "bureaucracy": "Government administration capacity",
+        "law": "Legal system effectiveness",
+        "education": "Literacy and school access",
+        "healthcare": "Population health",
+        "social_mobility": "Pop promotion/demotion",
+        "capitalism": "Economic organization",
+        "press": "Information and media",
+        "policing": "Internal security",
+        "railways": "Infrastructure"
+      },
+      "mechanics": {
+        "availability": "Based on technology research",
+        "embrace_progress": "0-100 progress over time",
+        "spread_rate": "From neighboring countries",
+        "decay": "If not embraced and surrounded by less advanced"
+      },
+      "effects": "Provide modifiers to country/state/buildings when embraced"
+    }
+  },
+
+  "5_11_government_formation": {
+    "title": "5.11 Government Formation",
+    "research": {
+      "web_definition": {
+        "what_is": "Which interest groups compose the executive branch and how they coordinate",
+        "what_exists": "Coalition politics, determining which groups are in/out of government"
+      },
+      "types": {
+        "autocracy": "Single ruler, no voting, ruler's IG in government",
+        "oligarchy": "Small group rules, limited voting",
+        "democracy": "Popular voting, multiple parties"
+      },
+      "size_allowance": "Based on laws - monarchy base 1, varies by law",
+      "reform": {
+        "add_ig": "Increases legitimacy",
+        "remove_ig": "Radicalizes 25% of their pops",
+        "replace": "Remove one, add another"
+      }
+    }
   },
 
   "checklist": [

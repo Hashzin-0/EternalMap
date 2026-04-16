@@ -1,9 +1,24 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 6: TECHNOLOGY - Complete Research with Web Sources",
   "description": "Weeks 27-30 - Functional technological research. Research compiled from web sources with detailed implementation.",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 12,
+    "agents": [
+      "Tech Tree",
+      "Innovation Points",
+      "Tech Unlocking",
+      "Tech Spread",
+      "Tech Spread Mechanics",
+      "Innovation Generation",
+      "Tech Tier Progression",
+      "Research Queue",
+      "Tech Requirements",
+      "University Effects",
+      "Research Speed Modifiers",
+      "AI Research Prioritization"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - Technology",
       "Victoria 3 Wiki - Innovation",
@@ -156,6 +171,13 @@
     "Tech Spread (passive, random)"
   ],
   "deliverable": "Functional technological research system",
+  "supplementary_docs": [
+    {
+      "title": "Technology Deep Dive (Extended Research)",
+      "file": "fase6_tecnologia.md",
+      "description": "Extended research covering tech spread mechanics, innovation generation, AI prioritization, and detailed formulas"
+    }
+  ],
   "references": [
     {
       "title": "Victoria 3 Wiki - Technology",

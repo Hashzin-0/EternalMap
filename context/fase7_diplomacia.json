@@ -1,9 +1,27 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 7: DIPLOMACY - Complete Research with Web Sources",
   "description": "Weeks 31-36 - Diplomacy and wars. Research compiled from web sources with detailed implementation.",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 15,
+    "agents": [
+      "Diplomatic Relations",
+      "Diplomatic Plays",
+      "War System",
+      "Peace Treaties",
+      "Subjects",
+      "Prestige/Rank",
+      "Diplomatic Play Phases",
+      "War Goals",
+      "Infamy System",
+      "Interest in Regions",
+      "Maneuvers",
+      "Alliances",
+      "Trust System",
+      "Peace Negotiation",
+      "Subject Types"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - Diplomatic Play",
       "Victoria 3 Wiki - Diplomacy",
@@ -91,7 +109,7 @@
     }
   },
 
-  "7_3_war_system": {
+"7_3_war_system": {
     "title": "7.3 War System",
     "research": {
       "web_definition": {
@@ -101,6 +119,38 @@
         "how_to_integrate": "War exhaustion from battles. Occupation of states affects surrender progress.",
         "how_to_expand": "Add unit types, new military mechanics."
       },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Warfare_overview"
+      ],
+      "combat_width": {
+        "formula": "combat_width = ceil((5 + 0.5 × state_infrastructure) × province_terrain_multiplier)",
+        "base": "5 + 0.5 × infrastructure",
+        "terrain_modifiers": {
+          "plains": "1.0",
+          "forest": "0.8",
+          "hills": "0.67",
+          "mountain": "0.34",
+          "jungle": "0.75"
+        }
+      },
+      "battle_phases": {
+        "fire": "Ranged damage phase",
+        "shock": "Melee/cavalry charge phase",
+        "retreat_check": "Morale threshold check"
+      },
+      "mobilization": {
+        "limited_conscription": "10% population",
+        "service_by_requirement": "25%",
+        "extensive_conscription": "50%",
+        "total_conscription": "100%"
+      },
+      "peace_negotiation": {
+        "trigger": "Surrender progress reaches threshold",
+        "negotiation": "Winner can demand terms",
+        "white_peace": "No gains/losses"
+      }
+    }
+  },
       "sources": [
         "https://vic3.paradoxwikis.com/Warfare_overview"
       ]

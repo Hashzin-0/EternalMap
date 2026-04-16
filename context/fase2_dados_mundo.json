@@ -1,9 +1,24 @@
 {
-  "version": "2.0.0",
+  "version": "2.2.0",
   "title": "Phase 2: WORLD DATA - Complete Research with Web Sources",
   "description": "Weeks 5-8 - Playable world with states and geographic data. Research compiled from web sources with detailed implementation.",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 12,
+    "agents": [
+      "Phaser 4 WebGPU + Alternativas",
+      "Map Data Structures",
+      "Terrain Types",
+      "Resources System",
+      "Countries Data",
+      "Grid Systems",
+      "World Generation",
+      "Procedural Map Generation",
+      "Hex Grid Algorithms",
+      "Noise Functions",
+      "Voronoi Province Generation",
+      "Map Data Formats"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - State modding",
       "Victoria 3 Dev Diary #16 - States",
@@ -292,6 +307,77 @@
         "state_region": "STATE_NAME = { id, provinces[], traits{}, city, farm, port, mine, wood, arable_land, resources }",
         "state": "create_state = { country, owned_provinces }",
         "strategic_region": "region_name = { graphical_culture, capital_province, states[] }"
+      }
+    },
+    "procedural_generation": {
+      "hex_grid_algorithms": {
+        "offset_coordinates": {
+          "description": "Simplest hex grid implementation, rows with alternating offsets",
+          "pros": "Simple, maps to arrays naturally",
+          "cons": "Complicates neighbor calculations"
+        },
+        "cube_coordinates": {
+          "description": "Triple coordinate system (x, y, z) where x + y + z = 0",
+          "pros": "Most elegant math, symmetric treatment",
+          "cons": "Requires 3 values (one derived)"
+        },
+        "axial_coordinates": {
+          "description": "(q, r) pair - two coords from cube system",
+          "pros": "Compact storage, good for hash tables",
+          "cons": "Less elegant than cube"
+        },
+        "distance_formula": "hexDistance(a, b) = (abs(a.q - b.q) + abs(a.q + a.r - b.q - b.r) + abs(a.r - b.r)) / 2"
+      },
+      "noise_functions": {
+        "perlin_noise": {
+          "description": "Smooth pseudo-random patterns with directional coherence",
+          "implementation": "Gradient vectors on square grid, smooth interpolation",
+          "use_case": "Basic terrain heightmaps"
+        },
+        "simplex_noise": {
+          "description": "Improved noise using hexagonal lattice",
+          "pros": "Fewer artifacts, faster in 2D/3D",
+          "use_case": "Recommended for strategy game terrain"
+        },
+        "worley_noise": {
+          "description": "Distance to seed points, cell-like patterns",
+          "use_case": "Rock formations, resource deposits, coastlines"
+        },
+        "fbm": {
+          "description": "Fractal Brownian Motion - multiple octaves stacked",
+          "formula": "result = sum(amplitude^i * noise(frequency^i * x)) for i in octaves"
+        }
+      },
+      "province_generation": {
+        "voronoi": {
+          "description": "Divides plane by proximity to seed points",
+          "algorithm": "Fortune's algorithm O(n log n)",
+          "properties": ["Organic borders", "Each province has clear center", "Adjacent provinces share boundaries"]
+        },
+        "lloyds_relaxation": {
+          "description": "Iteratively moves seeds to cell centroids",
+          "iterations": "5-10 typically",
+          "result": "More uniform region sizes"
+        },
+        "flood_fill": {
+          "description": "Provinces grow outward from seeds until size threshold",
+          "pros": "Naturally contiguous shapes",
+          "challenge": "Preventing enclaves"
+        }
+      },
+      "map_formats": {
+        "tmx": {
+          "description": "Tiled Map Editor XML format",
+          "supports": ["Multiple layers", "Orthogonal/isometric/hex", "CSV/base64 encoding"]
+        },
+        "ldtk": {
+          "description": "Level Design Toolkit - modern alternative",
+          "features": ["Auto-tiling rules", "Multiple levels", "Entity layers", "Type-checked fields"]
+        },
+        "custom_json": {
+          "description": "Most common in strategy games",
+          "structure": "provinces[], resources[], terrain[], adjacency[]"
+        }
       }
     }
   },

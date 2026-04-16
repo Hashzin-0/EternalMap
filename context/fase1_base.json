@@ -1,17 +1,85 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "title": "Fase 1: BASE - Setup e Engine de Jogo (Pesquisa Completa)",
   "description": "Semanas 1-4 - Mapa 2D interativo com pan/zoom. Pesquisa completa com múltiplos agentes.",
   "data_pesquisa": {
-    "total_agentes": 5,
+    "total_agentes": 10,
     "agentes": [
       "Phaser 4 WebGPU + Alternativas",
       "Game Loop Patterns", 
       "Camera Controls",
       "Tilemap Rendering",
-      "Zustand State Management"
+      "Zustand State Management",
+      "Event-Driven Architecture",
+      "ECS Patterns",
+      "State Machine Patterns",
+      "Command Pattern",
+      "Game Tick Systems"
     ],
-    "data_compilacao": "2025"
+    "data_compilacao": "2026-04-16"
+  },
+  "additional_research": {
+    "event_driven_architecture": {
+      "topic": "Event-Driven Architecture for Games",
+      "what_is": "Design pattern where game systems communicate through discrete events rather than direct method calls, creating loose coupling between components",
+      "what_exists": [
+        "Phaser Events system",
+        "Custom EventBus implementations",
+        "Redux-like event stores",
+        "Signal/Slot patterns"
+      ],
+      "how_to_use": {
+        "event_definition": "Define semantic events representing gameplay meaning (e.g., 'enemyKilled' instead of 'collisionDetected')",
+        "event_bus": "Create central event bus for publisher-subscriber communication",
+        "subscription": "Systems subscribe to relevant events and react appropriately"
+      },
+      "code_example": "class GameEventBus {\n  private handlers: Map<string, Set<Function>> = new Map();\n  \n  on(event: string, callback: Function): void {\n    if (!this.handlers.has(event)) {\n      this.handlers.set(event, new Set());\n    }\n    this.handlers.get(event)!.add(callback);\n  }\n  \n  emit(event: string, data?: any): void {\n    this.handlers.get(event)?.forEach(cb => cb(data));\n  }\n}"
+    },
+    "ecs_pattern": {
+      "topic": "Entity Component System (ECS)",
+      "what_is": "Architecture pattern separating data (components) from behavior (systems), enabling composition over inheritance",
+      "what_exists": [
+        "Pure ECS implementations",
+        "Hybrid ECS (entities as objects with components)",
+        "Data-oriented ECS"
+      ],
+      "how_to_use": {
+        "entities": "Unique IDs representing game objects",
+        "components": "Data containers attached to entities",
+        "systems": "Logic that processes entities with certain components"
+      },
+      "code_example": "interface Entity { id: string; }\ninterface Component { type: string; }\ninterface System { update(dt: number): void; }\n\n// Example: PositionComponent, RenderSystem"
+    },
+    "command_pattern": {
+      "topic": "Command Pattern for Game Actions",
+      "what_is": "Encapsulates game actions as objects, enabling undo/redo, queuing, and serialization",
+      "what_exists": [
+        "Basic command objects",
+        "Command queues",
+        "Macro commands",
+        "Command history for undo/redo"
+      ],
+      "how_to_use": {
+        "command_interface": "Define execute() and undo() methods",
+        "invoker": "Executes commands and manages history",
+        "receiver": "The game system that performs the action"
+      }
+    },
+    "game_tick_systems": {
+      "topic": "Game Tick Systems",
+      "what_is": "Systems for managing time progression in game loops with different tick rates for different subsystems",
+      "what_exists": [
+        "Fixed tick (physics, game logic)",
+        "Variable tick (AI, UI)",
+        "Render tick (interpolation)",
+        "Network tick (sync)"
+      ],
+      "how_to_use": {
+        "tick_aggregation": "Multiple fixed updates per frame for consistent physics",
+        "interpolation": "Smooth rendering between fixed updates",
+        "decoupling": "Separate tick rates for different systems"
+      }
+    }
   },
   "tasks": {
     "1_1_setup_nextjs": {

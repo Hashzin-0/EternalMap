@@ -78,7 +78,7 @@ export class MainScene extends Phaser.Scene {
         tiles[y][x] = {
           x,
           y,
-          terrain: TerrainType.GRASS,
+          terrain: TerrainType.PLAINS,
           elevation: 50,
           resources: {},
           buildingId: null,

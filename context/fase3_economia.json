@@ -1,9 +1,27 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 3: ECONOMY - Complete Research with Web Sources",
   "description": "Weeks 9-14 - Functional economy system. Research compiled from web sources with detailed implementation.",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 15,
+    "agents": [
+      "Goods System",
+      "Building Types",
+      "Construction System",
+      "Production Methods",
+      "Treasury",
+      "Trade Routes",
+      "Market Prices",
+      "Price Elasticity",
+      "Supply/Demand Curves",
+      "Trade Optimization",
+      "Production Chains",
+      "Dependency Graphs",
+      "GDP Calculation",
+      "Inflation Mechanics",
+      "Trade Advantage"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - Building",
       "Victoria 3 Wiki - Production method",
@@ -412,6 +430,122 @@
       "balanced_budget": "Income ≥ Expenses",
       "deficit": "Expenses > Income (uses reserves/creates debt)",
       "investment_pool": "For private construction"
+    }
+  },
+
+  "3_8_price_elasticity": {
+    "title": "3.8 Price Elasticity and Market Dynamics",
+    "research": {
+      "what_is": "Mathematical model of how price changes affect supply and demand",
+      "formula": "price = base × [1 + 0.75 × clamp((BUY − SELL) / min(BUY, SELL), ±1)]",
+      "constraints": "Price varies 25%-175% of base (75% below to 75% above)",
+      "elasticity_types": {
+        "perfectly_elastic": "demand drops to 0 at price threshold",
+        "elastic": "demand responsive to price changes",
+        "inelastic": "demand barely changes with price",
+        "perfectly_inelastic": "demand constant regardless of price"
+      },
+      "market_dynamics": {
+        "equilibrium": "Where BUY = SELL at base price",
+        "shortage": "BUY > SELL → price rises toward max",
+        "surplus": "SELL > BUY → price falls toward min"
+      },
+      "local_pricing": "local = (market_access × market_price) + ((1 - market_access) × world_price)"
+    }
+  },
+
+  "3_9_supply_demand_curves": {
+    "title": "3.9 Supply/Demand Curve Calculation",
+    "research": {
+      "demand_curve": {
+        "formula": "demand = base_demand × (price / base_price)^elasticity",
+        "elasticity_typical": "-0.5 to -1.5 for luxury goods, -0.1 to -0.3 for necessities"
+      },
+      "supply_curve": {
+        "formula": "supply = base_supply × (price / base_price)^supply_elasticity",
+        "elasticity_typical": "0.5 to 2.0 depending on building capacity"
+      },
+      "market_clear": "quantity_equilibrium = sqrt(demand_0 × supply_0)",
+      "price_equilibrium": "price_equilibrium = base_price × sqrt(supply_0 / demand_0)"
+    }
+  },
+
+  "3_10_trade_optimization": {
+    "title": "3.10 Trade Route Optimization",
+    "research": {
+      "route_efficiency": {
+        "profit": "selling_price - buying_price - transport_cost",
+        "transport_cost": "distance × convoy_requirement × convoy_cost",
+        "optimal_routes": "Highest profit per convoy-day"
+      },
+      "trade_capacity": {
+        "calculation": "Trade_center_levels × good_specific_capacity",
+        "limiting_factor": "Lowest of: available_routes, trade_capacity, good_production"
+      },
+      "world_market": {
+        "price": "Based on global exports vs imports",
+        "advantage": "Higher trade_share = higher profit share"
+      }
+    }
+  },
+
+  "3_11_production_chains": {
+    "title": "3.11 Production Chains and Input/Output",
+    "research": {
+      "dependency_graph": {
+        "structure": "Directed acyclic graph of goods",
+        "example": "Iron → Steel → Tools → Machinery → Factories"
+      },
+      "bottleneck_analysis": {
+        "method": "Identify lowest throughput in chain",
+        "expansion": "Focus on bottleneck for maximum efficiency gain"
+      },
+      "throughput_calculation": "output = input × conversion_rate × throughput_modifier"
+    }
+  },
+
+  "3_12_gdp_calculation": {
+    "title": "3.12 GDP Calculation Methods",
+    "research": {
+      "expenditure_approach": "GDP = C + I + G + (Ex - Im)",
+      "income_approach": "GDP = wages + rent + interest + profits",
+      "production_approach": "GDP = sum(value_added per sector)",
+      "game_implementation": "Sum of all building outputs + pop consumption + government spending",
+      "real_vs_nominal": "Adjust for price changes over time"
+    }
+  },
+
+  "3_13_inflation_mechanics": {
+    "title": "3.13 Inflation Mechanics",
+    "research": {
+      "definition": "General increase in price levels over time",
+      "causes": {
+        "demand_pull": "Too much money chasing too few goods",
+        "cost_push": "Production costs increase (wages, resources)",
+        "monetary": "Money supply growth exceeds production"
+      },
+      "formula": "inflation_rate = (money_supply_growth - production_growth)",
+      "effects": {
+        "savings": "Real value of savings decreases",
+        "debt": "Real debt value decreases (benefits debtors)",
+        "exports": "More expensive → less competitive",
+        "uncertainty": "Harder to plan investments"
+      },
+      "game_mechanics": "Track price index, adjust all prices monthly"
+    }
+  },
+
+  "3_14_trade_advantage": {
+    "title": "3.14 Trade Advantage Calculation",
+    "research": {
+      "definition": "How dominant a country is in trading a specific good",
+      "calculation": "trade_advantage = (exports_to_market / total_market_exports)",
+      "benefits": {
+        "price_control": "Higher influence on market price",
+        "profit_share": "Higher share of trade profits",
+        "stability": "Less affected by competition"
+      },
+      "loss": "Other countries can challenge through investment"
     }
   },
 

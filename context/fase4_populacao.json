@@ -1,9 +1,24 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Phase 4: POPULATION - Complete Research with Web Sources",
   "description": "Weeks 15-20 - Pops living in the world. Research compiled from web sources with detailed implementation.",
   "metadata": {
     "research_date": "2026-04-16",
+    "total_agents": 12,
+    "agents": [
+      "Pop Types and Professions",
+      "Pop Strata",
+      "Employment System",
+      "Pop Needs",
+      "Standard of Living",
+      "Migration",
+      "Population Growth",
+      "Culture",
+      "Religion",
+      "Social Mobility",
+      "Pop Conversion",
+      "Radicalization"
+    ],
     "web_sources": [
       "Victoria 3 Wiki - Pops",
       "Victoria 3 Wiki - Standard of Living",
@@ -371,6 +386,78 @@
         "conversion": "Possible through institutions"
       },
       "religious_unity": "Percentage with state religion affects stability"
+    }
+  },
+
+  "4_9_social_mobility": {
+    "title": "4.9 Social Mobility",
+    "research": {
+      "web_definition": {
+        "what_is": "Vertical movement of pops between social strata based on wealth, literacy, and qualifications",
+        "what_exists": "Pops can promote to higher professions when they meet qualification requirements. Demotion occurs when wealth drops below profession threshold.",
+        "how_to_use": "Qualifications grow monthly based on attribute match to current profession. Pops exceeding requirements gain qualifications toward higher professions.",
+        "how_to_integrate": "Connected to employment (positions needed), laws (serfdom restricts), education (literacy affects), discrimination (affects mobility)"
+      },
+      "qualification_system": {
+        "base": "Monthly growth based on wealth/literacy vs profession requirements",
+        "formula": "growth_rate = 0.05 × (wealth_match + literacy_match - 1.0)",
+        "promotion": "When position opens, pops with highest qualifications get promoted"
+      },
+      "social_hierarchy": {
+        "three_strata": "Upper (capitalists, aristocrats), Middle (officers, clerks, artisans, engineers), Lower (workers, laborers, peasants, slaves)",
+        "alternative_hierarchies": "Can implement caste system or other cultural hierarchies"
+      }
+    }
+  },
+
+  "4_10_pop_conversion": {
+    "title": "4.10 Pop Conversion (Culture/Religion)",
+    "research": {
+      "web_definition": {
+        "what_is": "Processes by which pops change cultural identity or religious affiliation over time",
+        "what_exists": "Religious conversion and cultural assimilation are separate mechanics with different requirements"
+      },
+      "acceptance_levels": {
+        "violent_hostility": "0-19: -100% migration desire, 50% wage, no political rights",
+        "cultural_erasure": "20-39: Strong prejudice, 100% migration desire",
+        "open_prejudice": "40-59: Moderate, 50% migration desire, limited voting",
+        "second_class": "60-79: Near acceptance, 20% migration desire",
+        "accepted": "80-100: Full rights, normal gameplay"
+      },
+      "conversion_rates": {
+        "base_religious": "0.2% per month",
+        "base_cultural": "0.2% per month",
+        "modifiers": {
+          "promote_national_values": "+100%",
+          "religious_schools": "+20% per institution level",
+          "pop_radicalism": "Reduces rate"
+        }
+      },
+      "requirements": {
+        "religious": "Low acceptance triggers automatic conversion",
+        "cultural": "Must be at least second-class citizen (60+), not in culture homeland"
+      }
+    }
+  },
+
+  "4_11_radicalization": {
+    "title": "4.11 Radicalization Mechanics",
+    "research": {
+      "web_definition": {
+        "what_is": "Process by which pops become radicals who may support revolutionary movements",
+        "what_exists": "Radicals accumulate from unmet needs, opposing laws, low SoL vs expected"
+      },
+      "radical_generation": {
+        "needs_satisfaction": "Below 50% SoL increases radical chance",
+        "law_opposition": "IG approval below 0 adds to radicalism",
+        "sol_decline": "Rapid SoL drop increases radicals",
+        "formula": "radical_chance = (0.5 - needs_satisfaction) × 0.1 + |ig_approval| × 0.02 + |sol_change| × 0.2"
+      },
+      "revolutionary_movements": {
+        "formation": "When enough pops become radical around specific law demand",
+        "strength": "Grows with radical support, decays when conditions improve",
+        "threshold": "REVOLUTION_THRESHOLD triggers revolution event"
+      }
     }
   },
 
