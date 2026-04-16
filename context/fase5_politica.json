@@ -1,0 +1,394 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 5: POLITICS - Complete Research with Web Sources",
+  "description": "Weeks 21-26 - Playable political system. Research compiled from web sources with detailed implementation.",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Victoria 3 Wiki - Government",
+      "Victoria 3 Wiki - Laws",
+      "Victoria 3 Wiki - Interest Groups",
+      "Victoria 3 Wiki - Ideologies",
+      "Victoria 3 Wiki - Elections",
+      "Victoria 3 Wiki - Legitimacy"
+    ],
+    "topics_covered": [
+      "Government Types",
+      "Laws System",
+      "Law Enactment",
+      "Legitimacy",
+      "Interest Groups",
+      "Political Influence",
+      "Ideologies",
+      "Elections"
+    ]
+  },
+
+  "5_1_government_types": {
+    "title": "5.1 Government Types",
+    "research": {
+      "web_definition": {
+        "what_is": "Government type defines who holds power and how. Affects reform difficulty, legitimacy sources, and political mechanics.",
+        "what_exists": "Monarchy (absolute, constitutional), Republic (parliamentary, presidential), Theocracy, Oligarchy, Tribal.",
+        "how_to_use": "Chosen at game start or through unification. Affects available institutions, laws, and reform costs.",
+        "how_to_integrate": "Government type determines: legitimacy source, reform difficulty multiplier, available IGs in power.",
+        "how_to_expand": "Mods can add new government types with unique modifiers."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Government"
+      ]
+    },
+    "government_types": {
+      "monarchy": {
+        "subtypes": ["absolute", "constitutional", "elective"],
+        "legitimacy": "Bloodline/tradition",
+        "reform_difficulty": "Higher",
+        "characteristics": "Ruler has personalty, personalist politics"
+      },
+      "republic": {
+        "subtypes": ["parliamentary", "presidential", "federal"],
+        "legitimacy": "Citizenship/constitution",
+        "reform_difficulty": "Medium",
+        "characteristics": "Elections matter, parties matter"
+      },
+      "theocracy": {
+        "subtypes": ["theocratic_republic", "theocratic_monarchy"],
+        "legitimacy": "Religious doctrine",
+        "reform_difficulty": "Very high",
+        "characteristics": "Clergy influence"
+      },
+      "oligarchy": {
+        "subtypes": ["aristocracy", "plutocracy", "military_junta"],
+        "legitimacy": "Wealth/status/military",
+        "reform_difficulty": "Variable",
+        "characteristics": "Elite rule"
+      }
+    },
+    "implementation_guide": {
+      "government_type": {
+        "id": "string",
+        "legitimacy_source": "traditional | charismatic | rational | ideological",
+        "reform_difficulty": "multiplier",
+        "ruling_igs": "ig_id[]",
+        "elections_allowed": "boolean"
+      }
+    }
+  },
+
+  "5_2_laws_system": {
+    "title": "5.2 Laws System",
+    "research": {
+      "web_definition": {
+        "what_is": "Laws define society rules: economic system, taxation, social policies, military doctrine. Each has multiple variants.",
+        "what_exists": "24 law groups with 2-5 variants each. Examples: Economic System (Unregulated, Interventionist, Cooperative), Slavery (Legal, Banned).",
+        "how_to_use": "Player can enact law variants through political institutions. Each has effects and requirements.",
+        "how_to_integrate": "Laws affect: building modifiers, pop happiness, IG support, country modifiers.",
+        "how_to_expand": "Mods can add new laws with effects."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Law"
+      ]
+    },
+    "law_groups": {
+      "economic_system": ["Unregulated", "Interventionist", "Cooperative", "Command"],
+      "trade_policy": ["Free Trade", "Protectionist", "Isolation"],
+      "taxation": ["No Taxation", "Land Tax", "Income Tax", "Sales Tax"],
+      "slavery": ["Legal", "Debt Peonage", "Household Slavery", "Outlawed"],
+      "migration": ["Closed Borders", "Migration Controls", "Freedom of Movement"],
+      "citizenship": ["Ethnic Nationality", "Jus Soli", "Jus Sanguinis", "Universal"],
+      "child_labor": ["Legal", "Restricted", "Prohibited"],
+      "workers_rights": ["No Regulation", "Regulation", "Workers Protections"],
+      "conscription": ["Voluntary", "Conscription"],
+      "press_freedom": ["Censorship", "Licensed Press", "Free Press"],
+      "public_health": ["No Health System", "Poor Law", "Health Insurance"]
+    },
+    "law_effects": {
+      "government_modifiers": "Country-wide effects",
+      "building_modifiers": "Building-specific effects",
+      "pop_needs": "Affects pop requirements",
+      "ig_support": "Changes IG approval"
+    },
+    "implementation_guide": {
+      "law": {
+        "id": "string",
+        "group": "law_group_id",
+        "variants": ["variant_id[]"],
+        "current": "variant_id",
+        "enactment_cost": "authority"
+      },
+      "variant": {
+        "id": "string",
+        "requirements": ["requirement_id[]"],
+        "effects": ["modifier[]"]
+      }
+    }
+  },
+
+  "5_3_law_enactment": {
+    "title": "5.3 Law Enactment",
+    "research": {
+      "web_definition": {
+        "what_is": "Changing laws requires political capital, institution support, and sometimes IG approval.",
+        "what_exists": "Process: check requirements → calculate support → progress bar → enactment. Can be blocked by IGs or institutions.",
+        "how_to_use": "Select law → see requirements → pay authority → wait for enactment. Failing = partial progress lost.",
+        "how_to_integrate": "Institution levels enable certain laws. IG approval affects ease. Revolutionary situations speed up changes.",
+        "how_to_expand": "Decrees can help. Revolutionary windows bypass normal process."
+      },
+      "enactment_requirements": {
+        "authority": "Political capital to spend",
+        "institutions": "Certain level required for some laws",
+        "ig_approval": "Some laws need IG support"
+      },
+      "reform_difficulty": {
+        "base": "Based on government type",
+        "institution_requirement": "Higher institution = easier",
+        "revolutionary_situation": "Bypasses requirements"
+      }
+    },
+    "implementation_guide": {
+      "enactment_process": {
+        "check_requirements": "authority, institutions, current laws",
+        "calculate_support": "based on IG approval",
+        "progress": "weekly tick toward 100%",
+        "completion": "law takes effect"
+      }
+    }
+  },
+
+  "5_4_legitimacy": {
+    "title": "5.4 Legitimacy",
+    "research": {
+      "web_definition": {
+        "what_is": "Legitimacy is how accepted the government's rule is. Affects stability, reform speed, military loyalty.",
+        "what_exists": "4 types: Traditional (monarchy), Charismatic (ruler), Rational (competence), Ideological (ideology).",
+        "how_to_use": "High legitimacy = faster reforms, loyal military. Low legitimacy = radicalization, rebellion risk.",
+        "how_to_integrate": "Legitimacy changes from: war success/failure, economic growth, reforms, events.",
+        "how_to_expand": "Ruler character traits can affect."
+      },
+      "legitimacy_types": {
+        "traditional": "Custom and history - monarchy",
+        "charismatic": "Personal qualities - ruler",
+        "rational": "Demonstrated competence - technocratic",
+        "ideological": "Political ideology"
+      },
+      "effects": {
+        "high": " reforms easier, military loyal, stability",
+        "low": "radicalization, rebellion risk, slower reforms",
+        "below_30": "Triggers radicalization",
+        "below_10": "Revolutionary situation"
+      },
+      "implementation_guide": {
+        "calculate": "base - decay + events + modifiers",
+        "change_sources": "war, economy, reforms, ruler traits"
+      }
+    }
+  },
+
+  "5_5_interest_groups": {
+    "title": "5.5 Interest Groups",
+    "research": {
+      "web_definition": {
+        "what_is": "Interest Groups (IGs) are organized political actors representing population segments with shared interests.",
+        "what_exists": "Victoria 3 has 8 main IGs: Industrialists, Landowners, Petit Bourgeois, Devout, Military, Intellectuals, Rural Folk, Trade Union.",
+        "how_to_use": "IGs influence politics, support/oppose laws, can be in government, provideClout.",
+        "how_to_integrate": "Each IG has: ideology, members (by profession), loyalty, clout, government status.",
+        "how_to_expand": "Mods can add new IGs."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Interest_groups"
+      ]
+    },
+    "interest_groups": {
+      "industrialists": {
+        "description": "Factory owners and capitalists",
+        "ideology": "Liberal/Conservative",
+        "issues": "economic, tariffs",
+        "members": "capitalists"
+      },
+      "landowners": {
+        "description": "Aristocracy and gentry",
+        "ideology": "Conservative",
+        "issues": "land, tradition",
+        "members": "aristocrats"
+      },
+      "petit_bourgeois": {
+        "description": "Shopkeepers and traders",
+        "ideology": "Liberal",
+        "issues": "commerce, regulation",
+        "members": "clerks, artisans"
+      },
+      "devout": {
+        "description": "Religious institutions",
+        "ideology": "Traditionalist",
+        "issues": "religion, church power",
+        "members": "clergy"
+      },
+      "military": {
+        "description": "Military leadership",
+        "ideology": "Authoritarian",
+        "issues": "military, conquest",
+        "members": "officers"
+      },
+      "intellectuals": {
+        "description": "Educated professionals",
+        "ideology": "Liberal/Socialist",
+        "issues": "reform, education",
+        "members": "engineers, scholars"
+      },
+      "rural_folk": {
+        "description": "Farmers and peasants",
+        "ideology": "Traditionalist",
+        "issues": "agriculture, land",
+        "members": "peasants"
+      },
+      "trade_union": {
+        "description": "Workers organizations",
+        "ideology": "Socialist",
+        "issues": "workers rights, wages",
+        "members": "workers"
+      }
+    },
+    "ig_properties": {
+      "loyalty": "0-100: loyal to government",
+      "clout": "0-100: political power",
+      "in_government": "boolean: can pass laws",
+      "support": "0-100: voting support",
+      "radicalism": "0-100: revolutionary tendency"
+    },
+    "implementation_guide": {
+      "ig_definition": {
+        "id": "string",
+        "name": "string",
+        "ideology": "ideology_id",
+        "leader": "character_id | null",
+        "in_government": "boolean",
+        "clout": "number",
+        "loyalty": "number"
+      }
+    }
+  },
+
+  "5_6_clout": {
+    "title": "5.6 Political Influence (Clout)",
+    "research": {
+      "web_definition": {
+        "what_is": "Clout measures IG's political power in the government. Determines ability to influence laws and institutions.",
+        "what_exists": "Clout calculated from: member population, wealth, institutional bonuses, ideology alignment.",
+        "how_to_use": "Higher clout = more influence on law votes, more likely to be in government, more political events.",
+        "how_to_integrate": "Clout changes as populations change, as new IGs form, as laws change.",
+        "how_to_expand": "Government positions can grant bonuses."
+      },
+      "clout_calculation": {
+        "member_factor": "member pop / total pop × base",
+        "wealth_factor": "average member wealth / 1000",
+        "institutional": "from government institutions",
+        "alignment": "ideology alignment bonus"
+      },
+      "clout_effects": {
+        "law_voting": "Higher clout = more vote weight",
+        "government": "Highest clout IGs in government",
+        "events": "IGs trigger events based on clout"
+      }
+    }
+  },
+
+  "5_7_ideologies": {
+    "title": "5.7 Ideologies",
+    "research": {
+      "web_definition": {
+        "what_is": "Political beliefs that guide IG and pop behavior. Each IG has an ideology affecting their positions.",
+        "what_exists": "Core ideologies: Conservative, Liberal, Socialist, Communist. Additionally: Fascist, Nationalist, Anarchist.",
+        "how_to_use": "Ideology determines stance on laws and issues. Player can shift IGs over time.",
+        "how_to_integrate": "Ideology evolves with laws, events, technology.",
+        "how_to_expand": "Mods can add ideologies."
+      },
+      "ideologies": {
+        "conservative": {
+          "positions": "Tradition, property, monarchy",
+          "preferred_government": "Monarchy"
+        },
+        "liberal": {
+          "positions": "Reform, Free trade, democracy",
+          "preferred_government": "Republic"
+        },
+        "socialist": {
+          "positions": "Workers rights, regulation, welfare",
+          "preferred_government": "Republic or Communist"
+        },
+        "communist": {
+          "positions": "Revolution, collective ownership",
+          "preferred_government": "Soviet"
+        },
+        "fascist": {
+          "positions": "National unity, authoritarian",
+          "preferred_government": "Dictatorship"
+        }
+      },
+      "implementation_guide": {
+        "ideology": {
+          "id": "string",
+          "positions": "law_position[]",
+          "aligned_igs": "ig_id[]"
+        }
+      }
+    }
+  },
+
+  "5_8_elections": {
+    "title": "5.8 Elections",
+    "research": {
+      "web_definition": {
+        "what_is": "Elections determine government leadership in republics. Triggered based on government type and laws.",
+        "what_exists": "Can be regular (based on law) or triggered. Voter franchise based on Citizenship law.",
+        "how_to_use": "Elections determined by IG clout and voter franchise. Winner forms government.",
+        "how_to_integrate": "Elections shift IG government status. New government = new law priorities.",
+        "how_to_expand": "Add election events and issues."
+      },
+      "franchise_levels": {
+        "wealth": "Only wealthy vote",
+        "property": "Property owners vote",
+        "limited": "Some classes vote",
+        "universal": "All adults (or adult males) vote"
+      },
+      "election_process": {
+        "calculate_votes": "Based on franchise and IG clout",
+        "determine_winner": "IG with most votes",
+        "form_government": "Winner controls institutions",
+        "apply_effects": "Policy shift, events"
+      },
+      "implementation_guide": {
+        "election_system": {
+          "trigger": "Based on law and timing",
+          "calculate": "votes from IG clout × franchise",
+          "winner": "Highest vote IG",
+          "government_change": "Update IG government status"
+        }
+      }
+  },
+
+  "checklist": [
+    "Government Types (4 main types)",
+    "Laws System (24 law groups)",
+    "Law Enactment (requirements, process)",
+    "Interest Groups (8 main IGs)",
+    "Political Clout",
+    "Legitimacy Types and Effects",
+    "Ideologies",
+    "Elections"
+  ],
+  "deliverable": "Playable political system with government, laws, IGs, elections",
+  "references": [
+    {
+      "title": "Victoria 3 Wiki - Government",
+      "url": "https://vic3.paradoxwikis.com/Government"
+    },
+    {
+      "title": "Victoria 3 Wiki - Interest Groups",
+      "url": "https://vic3.paradoxwikis.com/Interest_groups"
+    },
+    {
+      "title": "Victoria 3 Wiki - Laws",
+      "url": "https://vic3.paradoxwikis.com/Law"
+    }
+  ]
+}

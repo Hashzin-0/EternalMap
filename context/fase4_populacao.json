@@ -1,0 +1,407 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 4: POPULATION - Complete Research with Web Sources",
+  "description": "Weeks 15-20 - Pops living in the world. Research compiled from web sources with detailed implementation.",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Victoria 3 Wiki - Pops",
+      "Victoria 3 Wiki - Standard of Living",
+      "Victoria 3 Wiki - Needs",
+      "Victoria 3 Wiki - Migration",
+      "NamuWiki - Population",
+      "SegmentNext - Population Growth",
+      "StrateGGames - Migration Mechanics"
+    ],
+    "topics_covered": [
+      "Pop Types and Professions",
+      "Pop Strata",
+      "Employment System",
+      "Pop Needs",
+      "Standard of Living",
+      "Migration",
+      "Population Growth",
+      "Culture",
+      "Religion"
+    ]
+  },
+
+  "4_1_pop_types": {
+    "title": "4.1 Pop Types and Professions",
+    "research": {
+      "web_definition": {
+        "what_is": "Pops (short for Population) are the lifeblood of the country. Every combination of profession, culture, religion, and workplace gets its own unique pop.",
+        "what_exists": "Victoria 3 has 15 professions organized into 3 strata. Each profession has different wages, wealth accumulation, and political behavior.",
+        "how_to_use": "Pops work in buildings, earn wages, pay taxes, consume goods. They become radicals or loyalists based on SoL. They drive economy and politics.",
+        "how_to_integrate": "Pops are defined by: culture, religion, state, profession, workplace. Each combination is a unique pop group with own SoL and needs.",
+        "how_to_expand": "New professions can be added with unique wage weights, workforce ratios, and political effects."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Pops"
+      ]
+    },
+    "professions": {
+      "upper_stratum": {
+        "capitalist": {
+          "description": "Business owners and investors",
+          "workforce_ratio": "20%",
+          "wage_weight": 15,
+          "starting_sol": 25,
+          "role": "Owners, drive industrialization"
+        },
+        "aristocrat": {
+          "description": "Landowners and gentry",
+          "workforce_ratio": "15%",
+          "wage_weight": 12,
+          "starting_sol": 22,
+          "role": "Land-based wealth"
+        },
+        "bureaucrat": {
+          "description": "Government administrators",
+          "workforce_ratio": "20%",
+          "wage_weight": 8,
+          "starting_sol": 15,
+          "role": "Government service"
+        }
+      },
+      "middle_stratum": {
+        "officer": {
+          "description": "Military officers",
+          "workforce_ratio": "20%",
+          "wage_weight": 8,
+          "starting_sol": 18,
+          "role": "Military leadership"
+        },
+        "clerks": {
+          "description": "Office workers and traders",
+          "workforce_ratio": "20%",
+          "wage_weight": 6,
+          "starting_sol": 15,
+          "role": "Services and commerce"
+        },
+        "artisans": {
+          "description": "Skilled craftsmen",
+          "workforce_ratio": "25%",
+          "wage_weight": 6,
+          "starting_sol": 14,
+          "role": "Craft production"
+        },
+        "engineers": {
+          "description": "Technical workers",
+          "workforce_ratio": "25%",
+          "wage_weight": 8,
+          "starting_sol": 16,
+          "role": "Technical skills"
+        }
+      },
+      "lower_stratum": {
+        "workers": {
+          "description": "Factory workers",
+          "workforce_ratio": "30%",
+          "wage_weight": 4,
+          "starting_sol": 8,
+          "role": "Industrial labor"
+        },
+        "laborers": {
+          "description": "Unskilled workers",
+          "workforce_ratio": "35%",
+          "wage_weight": 3,
+          "starting_sol": 6,
+          "role": "Basic labor"
+        },
+        "peasants": {
+          "description": "Agricultural workers",
+          "workforce_ratio": "40%",
+          "wage_weight": 2,
+          "starting_sol": 5,
+          "role": "Farming"
+        },
+        "slaves": {
+          "description": "Forced labor",
+          "workforce_ratio": "100%",
+          "wage_weight": 0,
+          "starting_sol": 3,
+          "role": "Unpaid labor"
+        }
+      }
+    },
+    "strata": {
+      "upper": "Capitalists, Aristocrats - high wealth, political power",
+      "middle": "Officers, Clerks, Artisans, Engineers - skills and services",
+      "lower": "Workers, Laborers, Peasants, Slaves - manual labor"
+    },
+    "implementation_guide": {
+      "pop_definition": {
+        "id": "string",
+        "culture": "culture_id",
+        "religion": "religion_id",
+        "state": "state_id",
+        "profession": "profession_id",
+        "workplace": "building_id | null",
+        "size": "number",
+        "wealth": "number",
+        "standard_of_living": "number"
+      }
+    }
+  },
+
+  "4_2_pop_needs": {
+    "title": "4.2 Pop Needs",
+    "research": {
+      "web_definition": {
+        "what_is": "Each wealth level has defined needs and 'value' that must be spent on goods. Needs represent what pops buy to survive and live.",
+        "what_exists": "Victoria 3 has 14 need categories. Different wealth levels use different needs. Needs are satisfied by various goods.",
+        "how_to_use": "Pops spend on needs each week. Fulfilled needs → higher SoL. Unfulfilled → radicals. Needs scale with wealth.",
+        "how_to_integrate": "Needs determined by stratum: lower stratum = basic goods, upper = luxury goods.",
+        "how_to_expand": "Add new need categories or modify goods per need."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Needs"
+      ]
+    },
+    "need_categories": {
+      "life_needs": {
+        "description": "Basic survival",
+        "goods": ["Grain", "Meat", "Fish", "Fuel", "Textiles"],
+        "strata": "lower"
+      },
+      "household_needs": {
+        "description": "Home and family",
+        "goods": ["Furniture", "Housing"],
+        "strata": "lower-middle"
+      },
+      "everyday_comfort": {
+        "description": "Basic comfort",
+        "goods": ["Clothes", "Household Goods"],
+        "strata": "middle"
+      },
+      "luxury": {
+        "description": "Status goods",
+        "goods": ["Silk", "Wine", "Tea", "Coffee", "Services"],
+        "strata": "upper"
+      }
+    },
+    "need_system": {
+      "weekly_spending": "value determined by wealth level and stratum",
+      "goods_satisfaction": "spend amount on any good in category",
+      "partial_fulfillment": "SoL scales with amount spent vs needed"
+    }
+  },
+
+  "4_3_standard_of_living": {
+    "title": "4.3 Standard of Living",
+    "research": {
+      "web_definition": {
+        "what_is": "Standard of Living (SoL) represents socio-economic status. Affects needs fulfillment, birth/death rates, radicalism, migration.",
+        "what_exists": "SoL 1-99 grouped: Destitute (1-4), Struggling (5-9), Impoverished (10-14), Middling (15-19), Prosperous (20-29), Wealthy (30+).",
+        "how_to_use": "Wealth = base determinant of SoL. Higher SoL = more expensive needs. SoL above expected = job satisfaction. SoL below expected = radicalization.",
+        "how_to_integrate": "Base expected SoL by stratum. Any gap causes issues. Minimum expected SoL increases with literacy.",
+        "how_to_expand": "Institutions, laws, and decrees can modify SoL."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Standard_of_living"
+      ]
+    },
+    "sol_effects": {
+      "on_needs": "Higher SoL = larger, more expensive needs",
+      "on_politics": "Higher SoL = less radicals, more loyalists",
+      "on_demographics": "Higher SoL = lower birth rate, lower death rate (different rates)",
+      "on_migration": "Higher SoL = higher migration attraction"
+    },
+    "wealth_to_sol": {
+      "base": "Wealth level directly affects SoL",
+      "spending": "Wealth spent on needs reduces wealth",
+      "savings": "Excess wealth becomes savings/investment",
+      "equilibrium": "SoL drifts to stable level where income = expenses"
+    },
+    "implementation_guide": {
+      "calculate_sol": "sol = min(99, wealth_level + sol_modifiers)",
+      "expected_sol": "based on profession stratum",
+      "job_satisfaction": "sol > expected_sol"
+    }
+  },
+
+  "4_4_employment": {
+    "title": "4.4 Employment System",
+    "research": {
+      "web_definition": {
+        "what_is": "Buildings employ pops. Pops must live in the building's state. Unemployed pops don't earn wages.",
+        "what_exists": "Each building has positions based on level and production method. Workforce ratio determines max employed per pop group.",
+        "how_to_use": "Buildings need workers. Pops seek jobs. Higher wages attract more workers. Unemployment -> lower SoL -> radicals.",
+        "how_to_integrate": "Job matching: available positions matched to pop types with required qualifications.",
+        "how_to_expand": "Build more buildings for jobs. Expand existing buildings."
+      },
+      "employment_rules": {
+        "building_employment": "Building specifies workers by profession",
+        "qualifications": "Certain professions required for certain buildings",
+        "location": "Pops must live in building's state",
+        "wage": "Determined by building profitability"
+      },
+      "unemployment_effects": {
+        "no_wage": "Wealth declines",
+        "lower_sol": "Can't afford needs",
+        "radicalization": "More likely to become radical",
+        "migration": "More likely to move away"
+      }
+    }
+  },
+
+  "4_5_migration": {
+    "title": "4.5 Pop Migration",
+    "research": {
+      "web_definition": {
+        "what_is": "Movement of pops between states. Two types: Intra-market (within market) and Mass migration (between countries).",
+        "what_exists": "Pops migrate to higher SoL states. Mass migration to USA, Brazil, Australia when culture is radical.",
+        "how_to_use": "Migration laws control if/how pops can migrate. Higher migration attraction = more immigrants.",
+        "how_to_integrate": "Target state needs 25% higher attraction than origin. Mass migration needs 15%+ cultural turmoil.",
+        "how_to_expand": "Increase SoL, available jobs, lower turmoil. Decrees can boost attraction."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Migration"
+      ]
+    },
+    "migration_types": {
+      "intra_market": {
+        "description": "Within same market between states",
+        "frequency": "Continuous",
+        "factors": {
+          "sol_attraction": "+2 per point average SoL",
+          "jobs": "+1.5 per 10K available (max +30)",
+          "unemployment": "−1 per 10K (max −50)"
+        }
+      },
+      "mass_migration": {
+        "description": "Between countries, large scale",
+        "triggers": {
+          "turmoil": "15%+ cultural turmoil",
+          "population": "100K+ potential emigrants",
+          "target": "High SoL, incorporated, <30% turmoil"
+        },
+        "chance": "2% × turmoil + 0.2% × (10 - SoL) + 1% × (5 - SoL)"
+      }
+    },
+    "migration_laws": {
+      "closed_borders": "No migration",
+      "migration_controls": "No migration for discriminated",
+      "freedom_of_movement": "Full migration"
+    },
+    "migration_attraction": {
+      "base_formula": "SoL + jobs + arable_land - unemployment",
+      "decrees": {
+        "greener_grass": "+50% attraction",
+        "colonial_resettlement": "Bonus to unincorporated"
+      },
+      "traits": "State traits can modify"
+    },
+    "implementation_guide": {
+      "calculate_attraction": "base + modifiers × multipliers",
+      "select_target": "must have 25% higher than origin for intra-market",
+      "process_migration": "move pop sizes based on attraction difference"
+    }
+  },
+
+  "4_6_population_growth": {
+    "title": "4.6 Population Growth",
+    "research": {
+      "web_definition": {
+        "what_is": "Natural growth = birth rate - death rate. Both affected by SoL (demographic transition model).",
+        "what_exists": "High SoL = lower birth AND death rates. But death drops faster → net growth increases until SoL ~15, then declines.",
+        "how_to_use": "Pops grow naturally over time. Growth is faster at mid SoL. Very high SoL = slower growth.",
+        "how_to_integrate": "Base rates modified by: SoL, literacy (−10% birth at 100%), health institutions, laws.",
+        "how_to_expand": "Health systems decrease mortality but increase SoL which decreases birth. Net effect varies."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Birth_rate"
+      ]
+    },
+    "growth_formula": {
+      "very_low_sol": "Below 5: mortality increased (starvation)",
+      "low_sol": "5-15: mortality drops quickly",
+      "mid_sol": "10-25: birth drops steeply",
+      "high_sol": "Above 25: both rates low and stable"
+    },
+    "growth_modifiers": {
+      "literacy": "−10% birth rate at 100%, scales linearly",
+      "rights_of_women": "Affects birth rate",
+      "health_systems": "Reduces mortality",
+      "pollution": "Increases mortality",
+      "devastation": "Increases mortality"
+    },
+    "natural_growth": "base_birth_rate - base_death_rate + modifiers"
+  },
+
+  "4_7_culture": {
+    "title": "4.7 Culture",
+    "research": {
+      "web_definition": {
+        "what_is": "Cultural identity affecting pop behavior, acceptance, happiness, radicalism.",
+        "what_exists": "Each pop has a culture. Cultures have homelands. Culture groups (Germanic, Romance, Slavic).",
+        "how_to_use": "Same culture in homeland = acceptance bonus. Different culture = discrimination.",
+        "how_to_integrate": "Laws affect discrimination: Cultural Exclusion, Multiculturalism, National Supremacy.",
+        "how_to_expand": "Mod can add cultures, groups, traits."
+      },
+      "culture_effects": {
+        "happiness": "Same culture = +10, accepted culture = +5, other = −5",
+        "migration": "Prefer culturally similar destinations",
+        "turmoil": "Discriminated cultures generate more turmoil"
+      },
+      "culture_definitions": {
+        "id": "string",
+        "name": "localized",
+        "culture_group": "string",
+        "traits": ["trait_*"],
+        "homelands": ["state_region_id"]
+      }
+    }
+  },
+
+  "4_8_religion": {
+    "title": "4.8 Religion",
+    "research": {
+      "web_definition": {
+        "what_is": "Religious identity affecting pop happiness, politics, acceptance.",
+        "what_exists": "Major religions: Christianity, Islam, Hinduism, Buddhism, etc. Each has denominations.",
+        "how_to_use": "Same religion bonus to SoL. Different religion = potential discrimination.",
+        "how_to_integrate": "State religion affects legitimacy. Religious institutions affect politics.",
+        "how_to_expand": "Add religions with unique effects."
+      },
+      "religion_effects": {
+        "happiness": "Same religion = +10",
+        "politics": "Clergy affect religious IGs",
+        "conversion": "Possible through institutions"
+      },
+      "religious_unity": "Percentage with state religion affects stability"
+    }
+  },
+
+  "checklist": [
+    "Pop Professions (15 types)",
+    "Pop Strata (Upper/Middle/Lower)",
+    "Pop Needs (14 categories)",
+    "Standard of Living (calculation, effects)",
+    "Employment (job matching)",
+    "Migration (intra-market + mass)",
+    "Population Growth (birth/death rates)",
+    "Culture System",
+    "Religion System"
+  ],
+  "deliverable": "Pops living in the world with needs, SoL, migration, growth",
+  "references": [
+    {
+      "title": "Victoria 3 Wiki - Pops",
+      "url": "https://vic3.paradoxwikis.com/Pops"
+    },
+    {
+      "title": "Victoria 3 Wiki - Standard of Living",
+      "url": "https://vic3.paradoxwikis.com/Standard_of_living"
+    },
+    {
+      "title": "Victoria 3 Wiki - Migration",
+      "url": "https://vic3.paradoxwikis.com/Migration"
+    },
+    {
+      "title": "How To Increase Population In Victoria 3",
+      "url": "https://segmentnext.com/victoria-3-population-growth/"
+    }
+  ]
+}

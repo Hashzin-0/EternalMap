@@ -8,7 +8,6 @@ permission:
   glob: allow
   bash: allow
   question: allow
-  "*": deny
 ---
 
 # Product Owner

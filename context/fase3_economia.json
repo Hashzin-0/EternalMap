@@ -1,0 +1,454 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 3: ECONOMY - Complete Research with Web Sources",
+  "description": "Weeks 9-14 - Functional economy system. Research compiled from web sources with detailed implementation.",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Victoria 3 Wiki - Building",
+      "Victoria 3 Wiki - Production method",
+      "Victoria 3 Dev Diary #36 - Construction",
+      "Victoria 3 Wiki - Market",
+      "Victoria 3 Wiki - Trade Routes",
+      "Vicky3.guide - Markets & Trade",
+      "Game Developer Deep Dive - Economy",
+      "PCGamesN - Victoria 3 construction",
+      "The Gamer - Markets guide"
+    ],
+    "topics_covered": [
+      "Goods System",
+      "Building Types",
+      "Construction System",
+      "Production Methods",
+      "Treasury",
+      "Trade Routes",
+      "Market Prices"
+    ]
+  },
+
+  "3_1_goods_system": {
+    "title": "3.1 Goods System",
+    "research": {
+      "web_definition": {
+        "what_is": "Goods (or Trade Goods) represent natural resources, manufactured goods, or services which make up the economy. Each good has a base cost that varies in each market depending on supply and demand.",
+        "what_exists": "Victoria 3 has 4 main categories: Staple (food, wood), Industrial (iron, coal, rubber), Luxury (silk, tea), Military (small arms). Over 30 unique goods.",
+        "how_to_use": "Goods are consumed by pops for needs and by buildings for production. Each good has base price, traded quantity, prestige factor, and convoy cost multiplier.",
+        "how_to_integrate": "Goods flow through markets. Supply = production + imports. Demand = pops consumption + building input + exports. Price = base × (demand/supply)^elasticity, clamped at 75% ±.",
+        "how_to_expand": "New goods can be added via game files. Each good defines: base_cost, traded_quantity, prestige_factor, consumption_tax_cost"
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Goods",
+        "https://www.gamedeveloper.com/design/deep-dive-modeling-the-global-economy-in-victoria-3"
+      ]
+    },
+    "goods_categories": {
+      "staple": {
+        "description": "Basic consumer goods for population survival and basic comfort",
+        "examples": ["Grain", "Fish", "Wood", "Fabric", "Textiles"],
+        "base_price_range": "10-30",
+        "consumed_by": "Pops primarily (needs)"
+      },
+      "industrial": {
+        "description": "Raw materials and intermediate goods used for production",
+        "examples": ["Iron", "Coal", "Steel", "Rubber", "Lead", "Sulfur", "Tools"],
+        "base_price_range": "25-50",
+        "consumed_by": "Buildings (production input)"
+      },
+      "luxury": {
+        "description": "High-value goods for wealthy populations and status",
+        "examples": ["Silk", "Tea", "Coffee", "Wine", "Porcelain", "Automobiles"],
+        "base_price_range": "40-100",
+        "consumed_by": "Wealthy pops"
+      },
+      "military": {
+        "description": "Weapons and equipment for military operations",
+        "examples": ["Small Arms", "Ammunition", "Artillery", "Warships"],
+        "base_price_range": "50-80",
+        "consumed_by": "Military buildings, warfare"
+      }
+    },
+    "price_formula": {
+      "victoria_3": "price = Base Price × [1 + 0.75 × clamp((BUY − SELL) / min(BUY, SELL), ±1)]",
+      "constraints": "Price varies from 25% to 175% of base price (75% below to 75% above)",
+      "local_price": "local_price = (market_access × market_price) + ((1 - market_access) × world_market_price)"
+    },
+    "implementation_guide": {
+      "good_structure": {
+        "id": "string",
+        "name": "localized_key",
+        "category": "staple | industrial | luxury | military",
+        "base_price": "number",
+        "traded_quantity": "number",
+        "prestige_factor": "number",
+        "convoy_cost_multiplier": "number",
+        "consumption_tax_cost": "number"
+      }
+    }
+  },
+
+  "3_2_building_types": {
+    "title": "3.2 Building Types",
+    "research": {
+      "web_definition": {
+        "what_is": "Buildings are the primary basis of a country's economy. They employ pops and produce goods. Each building is located in a state and employs pops from that state.",
+        "what_exists": "Victoria 3 has 40+ building types across categories: Rural (farms, mines), Urban (factories), Infrastructure (railways, ports), Government (administrations, military), Development.",
+        "how_to_use": "Buildings convert input goods to output goods. They require pops, goods, and infrastructure. Can be expanded for economy of scale (+1% throughput per level).",
+        "how_to_integrate": "Each building has: building_group, icon, city_type, production_method_groups, required_construction. Buildings auto-expand based on urbanization (every 50 urban = 1 urban center).",
+        "how_to_expand": "New buildings defined in common/buildings with building_group, production_method_groups. Each level adds workforce and production capacity."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Building",
+        "https://vic3.paradoxwikis.com/List_of_buildings"
+      ]
+    },
+    "building_categories": {
+      "rural": {
+        "description": "Agriculture and resource extraction",
+        "examples": ["Wheat Farms", "Coal Mines", "Iron Mines", "Logging Camps", "Plantations"],
+        "characteristics": ["Use arable land", "Use resource potential", "Economy of scale", "Can use slaves"]
+      },
+      "urban": {
+        "description": "Manufacturing and services",
+        "examples": ["Textile Mills", "Steel Mills", "Machinery Factories", "Shipyards"],
+        "characteristics": ["Require urbanization", "Convert goods", "Economy of scale", "Auto-create urban centers"]
+      },
+      "infrastructure": {
+        "description": "Transportation and utilities",
+        "examples": ["Railways", "Ports", "Power Plants"],
+        "characteristics": ["Provide market access", "Provide convoys", "Build capacity"]
+      },
+      "government": {
+        "description": "Administration and military",
+        "examples": ["Government Administration", "Barracks", "University"],
+        "characteristics": ["Government funded", "No profit", "Provide bureau/military"]
+      },
+      "development": {
+        "description": "Trade and urban development",
+        "examples": ["Trade Centers", "Construction Sector"],
+        "characteristics": ["Economy of scale", "Auto-built based on needs"]
+      }
+    },
+    "key_building_properties": {
+      "owner": "Can be state, private investor, or company",
+      "level": "Each level adds capacity and workforce",
+      "economy_of_scale": "+1% throughput per building level in same state (first 50 levels)",
+      "throughput": "Measures efficiency of converting input to output"
+    },
+    "important_buildings": {
+      "construction_sector": {
+        "description": "Produces construction capacity for building new buildings",
+        "production_methods": ["Wooden Buildings", "Iron-Frame Buildings", "Steel-Frame Buildings", "Arc-Welded Buildings"],
+        "input_goods": "Wood, Fabric (basic) → Iron, Steel, Glass, Explosives (advanced)"
+      },
+      "trade_center": {
+        "description": "Enables trade with world market",
+        "world_market_access": "Trade capacity allows import/export",
+        "tariffs": "Can be set per good to protect or encourage trade"
+      }
+    },
+    "implementation_guide": {
+      "building_definition": {
+        "building_group": "building_group_name",
+        "icon": "path/to/icon",
+        "city_type": "none | small | medium | large",
+        "production_method_groups": ["pmg_*"],
+        "required_construction": "number",
+        "levels_per_mesh": "number"
+      },
+      "building_group": {
+        "category": "urban | rural | development",
+        "economy_of_scale": "yes | no"
+      }
+    }
+  },
+
+  "3_3_construction_system": {
+    "title": "3.3 Construction System",
+    "research": {
+      "web_definition": {
+        "what_is": "Construction represents a country's ability to build new buildings. Costs are applied over time as part of national budget, not as lump-sum.",
+        "what_exists": "Each country has base +10 construction capacity + more from Construction Sector buildings. Queue holds projects, capacity allocated weekly.",
+        "how_to_use": "Projects enter queue, capacity allocated by priority. Advanced methods require advanced goods (steel, glass). Government vs private construction split based on Economic System.",
+        "how_to_integrate": "Construction Sector uses pops and goods to produce construction capacity. Goods usage scales with actual need, not maximum capacity.",
+        "how_to_expand": "Build more Construction Sectors. Upgrade production methods for faster construction. Use decrees for construction efficiency."
+      },
+      "sources": [
+        "https://forum.paradoxplaza.com/forum/developer-diary/dev-diary-36-construction.1513612/"
+      ]
+    },
+    "construction_capacity": {
+      "base": "+10 per country",
+      "urbanization_bonus": "+10 per 50 urbanization",
+      "construction_sector_levels": "Each level adds capacity based on production method"
+    },
+    "production_methods": {
+      "wooden_buildings": {
+        "workforce": "800 workers",
+        "input": "Wood, Fabric",
+        "output": "+75 construction",
+        "technology": "None"
+      },
+      "iron_frame": {
+        "workforce": "750 workers",
+        "input": "Iron, Wood, Fabric",
+        "output": "+50 construction",
+        "technology": "Urban Planning"
+      },
+      "steel_frame": {
+        "workforce": "650 workers",
+        "input": "Steel, Iron, Glass",
+        "output": "+50 construction",
+        "technology": "Steel-Frame Buildings"
+      },
+      "arc_welded": {
+        "workforce": "600 workers",
+        "input": "Steel, Glass, Explosives",
+        "output": "+50 construction",
+        "technology": "Arc Welding"
+      }
+    },
+    "queue_system": {
+      "government_queue": "Uses national budget",
+      "private_queue": "Uses investment pool",
+      "split_ratio": "Based on Economic System law",
+      "priority": "Player can reorder projects"
+    },
+    "costs": {
+      "ongoing": "Not lump-sum, applied weekly",
+      "goods": "Subject to market forces",
+      "labor": "Paid from national budget for government construction",
+      "private": "Goods from investment pool, labor from budget"
+    },
+    "implementation_guide": {
+      "construction_queue": {
+        "projects": "ConstructionProject[]",
+        "max_weekly_progress": "number (depends on capacity)",
+        "active_projects": "Building projects currently being worked on"
+      },
+      "allocate_capacity": "distribute capacity to projects in priority order"
+    }
+  },
+
+  "3_4_production_methods": {
+    "title": "3.4 Production Methods",
+    "research": {
+      "web_definition": {
+        "what_is": "Production methods represent a building's mode of operation. They determine inputs, outputs, workforce, and effects. Multiple mutually exclusive methods per building.",
+        "what_exists": "Each building has multiple production method groups. Methods unlocked by technology, laws, or other methods. Examples: Simple Farming → Fertilizers → Chemical Fertilizers.",
+        "how_to_use": "Player selects production method per building. Affects: input goods, output goods, workforce type/count, building modifiers, state modifiers.",
+        "how_to_integrate": "Production methods have requirements (tech, laws). If requirements lost, auto-switch to first valid method. Methods can unlock advanced methods.",
+        "how_to_expand": "Define in common/production_methods with building_modifiers, state_modifiers, country_modifiers."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Production_method"
+      ]
+    },
+    "method_groups": {
+      "base": {
+        "description": "Determines primary input/output",
+        "icon_color": "brown"
+      },
+      "organization": {
+        "description": "Determines workforce and efficiency",
+        "icon_color": "gray"
+      },
+      "output": {
+        "description": "Determines secondary output",
+        "icon_color": "blue"
+      },
+      "military": {
+        "description": "Training and doctrine",
+        "icon_color": "red"
+      }
+    },
+    "method_effects": {
+      "workforce_scaled": "Modifies based on employed workers",
+      "level_scaled": "Modifies based on building level",
+      "throughput": "Increases efficiency of input→output conversion"
+    },
+    "pollution": {
+      "generated_by": "Most production methods",
+      "effects": {
+        "mortality": "+0.5% per 1% pollution",
+        "standard_of_living": "−0.03 per 1% pollution",
+        "extreme_weather": "+0.5% impact per 1% pollution"
+      },
+      "calculation": "Daily adjustment: current × 0.255 toward target"
+    },
+    "implementation_guide": {
+      "production_method": {
+        "texture": "path/to/texture",
+        "building_modifiers": {
+          "workforce_scaled": {},
+          "level_scaled": {}
+        },
+        "state_modifiers": {},
+        "country_modifiers": {}
+      }
+    }
+  },
+
+  "3_5_market_prices": {
+    "title": "3.5 Market Prices",
+    "research": {
+      "web_definition": {
+        "what_is": "Each market has its own prices based on total buy and sell orders. Markets are collections of states with economic connections.",
+        "what_exists": "Every country has a national market. Adjacent markets can trade. World market enables global trade via Trade Centers.",
+        "how_to_use": "Price = base × (demand/supply) with clamping. Local prices affected by market access. High SoL states have higher local prices.",
+        "how_to_integrate": "States with full market access use market price. Isolated states use higher prices (less supply). MAPI = Market Access Price Impact.",
+        "how_to_expand": "Customs unions create shared markets. Trade routes connect markets."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Market",
+        "https://www.vicky3.guide/economy/markets-trade"
+      ]
+    },
+    "market_types": {
+      "national": {
+        "description": "Single country or customs union",
+        "price_source": "Total buy/sell orders in market"
+      },
+      "adjacent": {
+        "description": "Land-connected or shared sea node",
+        "can_trade": true
+      },
+      "world": {
+        "description": "Global trade via Trade Centers",
+        "access_requires": "Port in state",
+        "trade_capacity": "Good-specific quantities"
+      }
+    },
+    "price_factors": {
+      "supply": "Production + Imports - Consumption - Exports",
+      "demand": "Pop needs + Building requirements + Government demand",
+      "base_price": "Price when BUY = SELL",
+      "min_price": "25% of base (75% below)",
+      "max_price": "175% of base (75% above)"
+    },
+    "local_price": {
+      "formula": "local = (market_access × market_price) + ((1 - market_access) × world_price)",
+      "importance": "Producers in low-access states may lose money"
+    },
+    "market_access": {
+      "determines": "How connected state is to market",
+      "sources": ["Railways", "Ports"],
+      "isolated": "0% = cannot participate properly"
+    }
+  },
+
+  "3_6_trade_routes": {
+    "title": "3.6 Trade Routes",
+    "research": {
+      "web_definition": {
+        "what_is": "Trade routes allow import/export between markets. Old system: manual routes. New system (1.5+): World Market with Trade Centers.",
+        "what_exists": "Countries can establish trade routes with strategic region partners. Requires convoys for overseas. Trade Centers enable autonomous world market trade.",
+        "how_to_use": "Create route → choose good → set amount → goods flow. Tariffs apply. Trade generates revenue for Trade Centers.",
+        "how_to_integrate": "Trade Centers provide trade capacity. Tariffs control flow. Convoys required for overseas.",
+        "how_to_expand": "Build more Trade Centers for capacity. Upgrade ports for convoys. Set tariffs per good."
+      },
+      "sources": [
+        "https://forum.paradoxplaza.com/forum/threads/victoria-3-dev-diary-143-trade-rework-the-world-market.1733205/"
+      ]
+    },
+    "trade_methods": {
+      "old_system": {
+        "manual_routes": "Player creates routes per good",
+        "tariffs": "Set per route",
+        "convoys": "Required for overseas"
+      },
+      "world_market": {
+        "trade_centers": "Enables autonomous trade",
+        "trade_capacity": "Good-specific limits",
+        "world_market_price": "Based on global exports vs imports"
+      }
+    },
+    "trade_advantage": {
+      "definition": "How dominant a country is in trading a specific good",
+      "benefit": "Higher share of trade profits"
+    },
+    "tariff_options": {
+      "no_priority": "Balanced imports/exports",
+      "protect_domestic": "No import tariff, encourage trade",
+      "encourage_exports": "Reduce export tariff"
+    },
+    "trade_requirements": {
+      "strategic_region": "Must have interest in region",
+      "convoys": "For overseas routes",
+      "diplomacy": "Must be allowed to trade"
+    }
+  },
+
+  "3_7_treasury": {
+    "title": "3.7 Treasury",
+    "research": {
+      "web_definition": {
+        "what_is": "Treasury manages national finances: income (taxes, tariffs, fines) and expenses (buildings, military, subsidies).",
+        "what_exists": "Income from: taxation (land, income, production, tariffs), trade revenue, building revenue. Expenses: construction, army, bureaucracy, subsidies, debt interest.",
+        "how_to_use": "Budget shows all income/expense lines. Player can adjust tax rates. Debt accumulates if expenses > income.",
+        "how_to_integrate": "Net income = all income - all expenses. Positive = surplus to reserves. Negative = deficit (reserves or debt).",
+        "how_to_expand": "Adjust tax rates per law. Build profit-generating buildings. Manage trade tariffs."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Treasury"
+      ]
+    },
+    "income_sources": {
+      "land_tax": "Based on land value",
+      "income_tax": "Based on pop income",
+      "production_tax": "Based on building output",
+      "tariff_tax": "On trade (set by player)",
+      "trade_revenue": "From trade routes",
+      "building_revenue": "Some buildings generate income"
+    },
+    "expense_sources": {
+      "construction": "Building new structures",
+      "military": "Army/navy maintenance",
+      "bureaucracy": "Government administration",
+      "pop_subsidies": "Welfare payments",
+      "debt_interest": "On loans taken"
+    },
+    "budget_mechanics": {
+      "tax_rates": "Set per taxation law",
+      "balanced_budget": "Income ≥ Expenses",
+      "deficit": "Expenses > Income (uses reserves/creates debt)",
+      "investment_pool": "For private construction"
+    }
+  },
+
+  "checklist": [
+    "Goods System (categories, base prices)",
+    "Building Types (rural, urban, infrastructure, government)",
+    "Production Methods (inputs, outputs, requirements)",
+    "Construction System (capacity, queue, costs)",
+    "Market Prices (supply/demand, local prices)",
+    "Trade Routes (world market, tariffs, convoys)",
+    "Treasury (income, expenses, debt)"
+  ],
+  "deliverable": "Functional economy system",
+  "references": [
+    {
+      "title": "Victoria 3 Wiki - Building",
+      "url": "https://vic3.paradoxwikis.com/Building"
+    },
+    {
+      "title": "Victoria 3 Wiki - Production method",
+      "url": "https://vic3.paradoxwikis.com/Production_method"
+    },
+    {
+      "title": "Dev Diary #36 - Construction",
+      "url": "https://forum.paradoxplaza.com/forum/developer-diary/dev-diary-36-construction.1513612/"
+    },
+    {
+      "title": "Victoria 3 Wiki - Market",
+      "url": "https://vic3.paradoxwikis.com/Market"
+    },
+    {
+      "title": "Markets & Trade Guide",
+      "url": "https://www.vicky3.guide/economy/markets-trade"
+    },
+    {
+      "title": "Deep Dive: Modeling the global economy in Victoria 3",
+      "url": "https://www.gamedeveloper.com/design/deep-dive-modeling-the-global-economy-in-victoria-3"
+    }
+  ]
+}

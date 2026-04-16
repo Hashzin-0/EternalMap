@@ -10,7 +10,6 @@ permission:
   grep: allow
   glob: allow
   question: allow
-  "*": deny
 ---
 
 # Documentation Writer

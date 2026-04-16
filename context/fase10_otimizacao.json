@@ -1,0 +1,366 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 10: OPTIMIZATION & PERFORMANCE - Complete Research",
+  "description": "WebGL/Phaser 4 optimization, memory management, mobile support, bug fixes and balancing",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Phaser 4 Rendering Concepts",
+      "JavaScript Gaming News - Phaser 4 Optimization"
+    ]
+  },
+  "topicos": {
+    "webgl_performance": {
+      "nome": "WebGL Performance",
+      "descricao": "Otimizações específicas para WebGL/Phaser 4",
+      "subtopicos": {
+        "rendering_optimization": {
+          "nome": "Rendering Optimization",
+          "descricao": "Otimização de renderização",
+          "tecnicas": [
+            {
+              "tecnica": "Object Pooling",
+              "descricao": "Reutilizar objetos em vez de criar/destruir",
+              "implementacao": "Criar pools para projectiles, particles, UI elements comuns"
+            },
+            {
+              "tecnica": "Sprite Batching",
+              "descricao": "Agrupar sprites semelhantes para renderização única",
+              "implementacao": "Usar mesma texture atlas para sprites similares, Phaser faz batching automático"
+            },
+            {
+              "tecnica": "Culling",
+              "descricao": "Não renderizar objetos fora da viewport",
+              "implementacao": "Phaser faz culling automático, mas verificar zonas ativas"
+            },
+            {
+              "tecnica": "GPU Instancing",
+              "descricao": "Pararenderizar milhares de objetos similares",
+              "implementacao": "Phaser 4 InstancedSprite API para objetos idênticos (unidades, partículas)"
+            },
+            {
+              "tecnica": "Texture Atlases",
+              "descricao": "Uma textura com múltiplas imagens",
+              "implementacao": "Usar TexturePacker para criar atlas, reduzir draw calls drasticamente"
+            }
+          ]
+        },
+        "batch_optimization": {
+          "nome": "Batch Optimization",
+          "descricao": "Otimização de batches do Phaser 4",
+          "configuracoes": {
+            "batchSize": "16384 (default) - ajustar se necessário",
+            "maxTextures": "8 (default) - depende do dispositivo"
+          },
+          "dicas": [
+            "Manter objetos similares juntos no mesmo batch",
+            "Não misturar muitas texturas diferentes",
+            "Usar mesma ordem de textura para objetos relacionados"
+          ]
+        },
+        "shader_optimization": {
+          "nome": "Shader Optimization",
+          "descricao": "Otimização de shaders personalizados",
+          "dicas": [
+            "Minimizar uniform updates",
+            "Usar vertex shader para movimento quando possível",
+            "Evitar branch no fragment shader",
+            "Cachear uniforms que não mudam"
+          ]
+        }
+      }
+    },
+    "memory_management": {
+      "nome": "Memory Management",
+      "descricao": "Gerenciamento de memória no browser e Phaser",
+      "subtopicos": {
+        "texture_memory": {
+          "nome": "Texture Memory",
+          "descricao": "Gerenciamento de memória de texturas",
+          "calculated_size": "~4MB por megapixel",
+          "otimizacoes": [
+            "Usar compressão quando possível (basis, dxt)",
+            "Gerar mipmaps apenas se necessário",
+            "Destruir texturas não usadas com texture.destroy()",
+            "Lazy load de texturas",
+            "Reutilizar texturas entre cenas"
+          ]
+        },
+        "object_lifecycle": {
+          "nome": "Object Lifecycle",
+          "descricao": "Ciclo de vida de objetos no Phaser",
+          "boas_praticas": [
+            "Sempre chamar destroy() em objetos que não usa mais",
+            "Destruir pipelines customizados no scene shutdown",
+            "Limpar event listeners em scene shutdown",
+            "Não deixar referências circulares"
+          ],
+          "cleanup_pattern": "this.events.on('shutdown', () => { /* cleanup */ })"
+        },
+        "garbage_collection": {
+          "nome": "Garbage Collection",
+          "descricao": "Minimizar pressão no GC",
+          "estrategias": [
+            "Evitar criar objetos no update loop",
+            "Reusar vectores e objetos temporários",
+            "Object pool para objetos frequentes",
+            "Chunk allocations em vez de individuais"
+          ]
+        },
+        "vram_management": {
+          "nome": "VRAM Management",
+          "descricao": "Gerenciamento de memória de vídeo",
+          "problema_comum": "VRAM não é limpa automaticamente ao reiniciar cena",
+          "solucao": "Manual cleanup no shutdown: pipeline.destroy(), textures.clear()"
+        }
+      }
+    },
+    "mobile_optimization": {
+      "nome": "Mobile Support",
+      "descricao": "Otimizações para dispositivos móveis",
+      "subtopicos": {
+        "device_detection": {
+          "nome": "Device Detection",
+          "descricao": "Detecção de dispositivo e capacidades",
+          "checks": [
+            "WebGPU vs WebGL vs Canvas fallback",
+            "Device performance tier",
+            "Memory available",
+            "Screen size e DPI"
+          ]
+        },
+        "adaptive_quality": {
+          "nome": "Adaptive Quality",
+          "descricao": "Qualidade adaptativa baseada no dispositivo",
+          "niveis": [
+            {"nome": "Low", "descricao": "Canvas renderer, menos particles, texturas menores"},
+            {"nome": "Medium", "descricao": "WebGL básico, particles médias"},
+            {"nome": "High", "descricao": "WebGPU, todos os efeitos, texturas completas"}
+          ],
+          "implementacao": "Detectar no boot e aplicar config apropriada"
+        },
+        "touch_controls": {
+          "nome": "Touch Controls",
+          "descricao": "Controles por toque",
+          "suporte": [
+            "Pinch to zoom",
+            "Two-finger pan",
+            "Tap para selecionar",
+            "Long press para contexto"
+          ]
+        },
+        "performance_monitoring": {
+          "nome": "Performance Monitoring",
+          "descricao": "Monitoramento de performance em runtime",
+          "metricas": [
+            "FPS target (30 vs 60)",
+            "Frame time variance",
+            "Memory usage",
+            "Draw calls"
+          ],
+          "implementacao": "Debug panel opcional para análise"
+        }
+      }
+    },
+    "game_loop_optimization": {
+      "nome": "Game Loop Optimization",
+      "descricao": "Otimização do loop de jogo",
+      "subtopicos": {
+        "delta_time": {
+          "nome": "Delta Time Handling",
+          "descricao": "Manipulação de delta time para consistency",
+          "implementacao": "Todas as simulações baseadas em delta time, não em frames fixos"
+        },
+        "update_batching": {
+          "nome": "Update Batching",
+          "descricao": "Agrupar atualizações",
+          "estrategias": [
+            "Processar pops em chunks",
+            "Atualizar preços em batch",
+            "Calcular migração por região, não individual"
+          ]
+        },
+        "simulation_culling": {
+          "nome": "Simulation Culling",
+          "descricao": "Não calcular para regiões não visíveis",
+          "implementacao": "Se玩家 está visualizando apenas uma região, simplificar cálculos de regiões distantes"
+        }
+      }
+    },
+    "asset_optimization": {
+      "nome": "Asset Optimization",
+      "descricao": "Otimização de assets",
+      "subtopicos": {
+        "image_compression": {
+          "nome": "Image Compression",
+          "descricao": "Compressão de imagens",
+          "formatos": [
+            {"nome": "WebP", "descricao": "Boa compressão com qualidade", "suporte": "Alto"},
+            {"nome": "Basis", "descricao": "Compressão GPU universal", "suporte": "Phaser 4"},
+            {"nome": "DXT/BC", "descricao": "Compressão de textura desktop", "suporte": "Desktop only"}
+          ],
+          "recomendacao": "Usar WebP com fallback para PNG"
+        },
+        "audio_compression": {
+          "nome": "Audio Compression",
+          "descricao": "Compressão de áudio",
+          "formatos": [
+            {"nome": "OGG", "descricao": "Boa compressão, wide support"},
+            {"nome": "AAC", "descricao": "Melhor qualidade, mobile support"}
+          ],
+          "dicas": "Streaming de áudio longo, samples curtos em memória"
+        },
+        "lazy_loading": {
+          "nome": "Lazy Loading",
+          "descricao": "Carregar assets sob demanda",
+          "implementacao": "Cenas carregam seus assets específicos, não tudo de uma vez"
+        }
+      }
+    },
+    "network_optimization": {
+      "nome": "Network Optimization (Future)",
+      "descricao": "Otimização de rede para multiplayer",
+      "nota": "Single-player focus por agora, mas preparar arquitetura",
+      "consideracoes": [
+        "State sync minimal (deltas, não estados completos)",
+        "Command queuing para offline actions",
+        "Prediction client-side para responsividade"
+      ]
+    },
+    "debugging_tools": {
+      "nome": "Debugging Tools",
+      "descricao": "Ferramentas de debug",
+      "subtopicos": {
+        "performance_profiler": {
+          "nome": "Performance Profiler",
+          "descricao": "Profiler de performance",
+          "metricas": [
+            "Frame time breakdown",
+            "Update vs render time",
+            "Memory allocation tracking"
+          ]
+        },
+        "visual_debug": {
+          "nome": "Visual Debug",
+          "descricao": "Debug visual",
+          "overlays": [
+            "Grid overlay",
+            "Province borders",
+            "FPS counter",
+            "Memory usage"
+          ]
+        },
+        "cheat_console": {
+          "nome": "Cheat Console",
+          "descricao": "Console de cheats para testing",
+          "comandos": [
+            "add_money",
+            "add_pop",
+            "instant_build",
+            "unlock_tech",
+            "teleport"
+          ]
+        }
+      }
+    },
+    "bug_tracking": {
+      "nome": "Bug Tracking",
+      "descricao": "Sistema de tracking de bugs",
+      "subtopicos": {
+        "error_logging": {
+          "nome": "Error Logging",
+          "descricao": "Sistema de logging de erros",
+          "implementacao": "Console + file logging para browser",
+          "categorias": ["Error", "Warning", "Info", "Debug"]
+        },
+        "save_validation": {
+          "nome": "Save Validation",
+          "descricao": "Validação de saves",
+          "checks": [
+            "State integrity no load",
+            "Data consistency",
+            "Version compatibility"
+          ]
+        },
+        "common_issues": {
+          "nome": "Common Issues",
+          "descricao": "Problemas comuns e soluções",
+          "issues": [
+            {"problema": "Memory leak após cena restart", "solucao": "Cleanup manual de VRAM"},
+            {"problema": "FPS drop com muitos pops", "solucao": "LOD para pops distantes"},
+            {"problema": "Context loss em mobile", "solucao": "Reconstruir texturas no restore"},
+            {"problema": "Save corruption", "solucao": "Backup + validation"}
+          ]
+        }
+      }
+    },
+    "balance_tuning": {
+      "nome": "Balance Tuning",
+      "descricao": "Balanceamento do jogo",
+      "subtopicos": {
+        "economy_balance": {
+          "nome": "Economy Balance",
+          "descricao": "Balanceamento econômico",
+          "areas": [
+            "Goods pricing",
+            "Building costs",
+            "Tax rates impact",
+            "Trade profitability"
+          ]
+        },
+        "political_balance": {
+          "nome": "Political Balance",
+          "descricao": "Balanceamento político",
+          "areas": [
+            "IG power balance",
+            "Law effects",
+            "Elections competitiveness",
+            "Revolution timing"
+          ]
+        },
+        "difficulty_scaling": {
+          "nome": "Difficulty Scaling",
+          "descricao": "Escala de dificuldade",
+          "opcoes": [
+            "Easy - faster SOL growth",
+            "Normal - Victoria 3 baseline",
+            "Hard - more challenges"
+          ]
+        }
+      }
+    },
+    "profiling_checklist": {
+      "nome": "Profiling Checklist",
+      "descricao": "Checklist de otimização",
+      "verificacoes": [
+        "✅ FPS estável em 60 (ou 30 em mobile)",
+        "✅ Sem memory leaks após múltiplas cenas",
+        "✅ Textures não acumulam na VRAM",
+        "✅ Event listeners são limpos",
+        "✅ Object pools para objetos frequentes",
+        "✅ Lazy loading de assets",
+        "✅ Sem objetos duplicados no DOM",
+        "✅ WebGL context não é perdido",
+        "✅ Delta time é consistente",
+        "✅ Draw calls otimizados"
+      ]
+    }
+  },
+  "expansoes_futuras": [
+    "Profiling automatizado com报告",
+    "Analytics de usage patterns",
+    "A/B testing de balanceamento",
+    "Remote config para tuning",
+    "Shader hot-reload para debugging"
+  ],
+  "references": [
+    {
+      "title": "Phaser 4 Rendering Concepts",
+      "url": "https://phaser.io/tutorials/phaser-4-rendering-concepts"
+    },
+    {
+      "title": "Phaser 4 Optimization Guide",
+      "url": "https://javascript-news.org/how-i-rendered-a-million-sprites-in-phaser-4"
+    }
+  ]
+}

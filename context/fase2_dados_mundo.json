@@ -1,0 +1,338 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 2: WORLD DATA - Complete Research with Web Sources",
+  "description": "Weeks 5-8 - Playable world with states and geographic data. Research compiled from web sources with detailed implementation.",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Victoria 3 Wiki - State modding",
+      "Victoria 3 Dev Diary #16 - States",
+      "Game Developer Deep Dive - Modeling Economy",
+      "Victoria 3 Wiki - Land warfare",
+      "Victoria 2 Wiki - Terrain",
+      "Victoria 3 Wiki - Goods",
+      "Victoria 3 Wiki - Production method",
+      "StrateGGames - Oil guides",
+      "Attack of the Fanboy - Goods guide"
+    ],
+    "topics_covered": [
+      "Map Data Structures",
+      "Terrain Types",
+      "Resources System",
+      "Countries Data",
+      "Grid Systems",
+      "World Generation"
+    ]
+  },
+
+  "2_1_map_data_structures": {
+    "title": "2.1 Map Data Structures (Province/State/Region Hierarchy)",
+    "research": {
+      "web_definition": {
+        "what_is": "States are the main political-geographical unit in Victoria 3 where pops live and buildings are built. They are based upon State Regions which are predefined parts of the map that can be subdivided into multiple split states.",
+        "what_exists": "Victoria 3 has 673 state regions globally, organized into 58 strategic regions. States inherit features from State Regions including State Traits, Arable Land, Resource Potential, and Hubs.",
+        "how_to_use": "Players interact with states for most economic actions. A State is controlled by a single country with dynamic borders that can change during gameplay. State Regions have static borders throughout the game.",
+        "how_to_integrate": "States can be Incorporated (fully integrated) or Unincorporated/Colonial. Incorporated states incur full taxation and consumption but cost bureaucracy. Unincorporated states have reduced taxes (-20%) and no consumption taxes.",
+        "how_to_expand": "Split states occur when multiple countries own provinces within a single State Region. Resources are divided proportionally based on province share."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/State",
+        "https://forum.paradoxplaza.com/forum/developer-diary/victoria-3-dev-diary-16-states.1491897/"
+      ]
+    },
+    "key_details": {
+      "state_vs_region": "A State is always controlled by a single country and has dynamic borders. A State Region can contain one or several States and has static borders.",
+      "split_state": "When two or more countries each own a portion of a State Region, they each control individual States within it. Resources are divided proportionally.",
+      "incorporation": "Incorporated states are fully integrated political units. Unincorporated/Colonial states have reduced taxation (-20%) but lower bureaucracy cost.",
+      "hubs": "Each state has up to 5 settlement types: City, Farm, Wood, Port, Mine. These appear visually based on related building levels.",
+      "traits": "State Traits represent geographical features affecting economy. Examples: 'state_trait_bergslagen', 'state_trait_scandinavian_forests'."
+    },
+    "implementation_guide": {
+      "data_structure": {
+        "state_region": {
+          "id": "number",
+          "subsistence_building": "building type",
+          "provinces": ["hex_id array"],
+          "traits": ["state_trait_*"],
+          "city": "province_id",
+          "farm": "province_id",
+          "port": "province_id",
+          "mine": "province_id",
+          "wood": "province_id",
+          "arable_land": "number",
+          "arable_resources": ["building groups"],
+          "capped_resources": ["resource type capped by state size"]
+        },
+        "state": {
+          "id": "string",
+          "state_region_id": "reference",
+          "owner": "country_id",
+          "incorporated": "boolean",
+          "devastation": "number 0-100",
+          "infrastructure": "number",
+          "market_access": "percentage"
+        },
+        "strategic_region": {
+          "id": "string",
+          "states": ["state_region_id"],
+          "graphical_culture": "string",
+          "capital_province": "province_id"
+        }
+      },
+      "project_location": "src/game-core/entities/hierarchy/"
+    }
+  },
+
+  "2_2_terrain_types": {
+    "title": "2.2 Terrain Types - Combat and Movement Effects",
+    "research": {
+      "web_definition": {
+        "what_is": "Terrain categories define the geographical nature of map tiles and affect combat, movement, and production.",
+        "what_exists": "Victoria 3 has multiple terrain features per province. Each feature adds to combat width calculation. Terrain provides modifiers to defense, offense, movement cost.",
+        "how_to_use": "Terrain affects combat width: combat_width = (5 + 0.5 × infrastructure) × terrain_multiplier. Mountain provinces increase combat width dramatically, reducing enemy advantages.",
+        "how_to_integrate": "Terrain is set per province in map data. Each province can have multiple terrain features (e.g., mountain province has both 'elevated' and 'hazardous').",
+        "how_to_expand": "Custom terrain features can be defined and applied to provinces through map modding."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Land_warfare",
+        "https://vic2.paradoxwikis.com/Terrain"
+      ]
+    },
+    "key_details": {
+      "terrain_statistics_vic2": {
+        "note": "Victoria 3 uses similar system but modified",
+        "arctic": { "movement": 1.0, "defense": 0, "farm_size": "50%", "combat_width": "100%" },
+        "plains": { "movement": 1.0, "defense": 0, "farm_size": "100%", "combat_width": "100%" },
+        "forest": { "movement": 1.2, "defense": "+1", "farm_size": "100%", "combat_width": "80%" },
+        "hills": { "movement": 1.2, "defense": "+1", "farm_size": "100%", "combat_width": "67%" },
+        "jungle": { "movement": 1.3, "defense": "+2", "farm_size": "100%", "combat_width": "75%" },
+        "mountains": { "movement": 1.4, "defense": "+2", "farm_size": "100%", "combat_width": "34%" }
+      },
+      "victoria_3_combat": {
+        "formula": "combat_width = ceil((5 + 0.5 × state_infrastructure) × province_terrain_multiplier)",
+        "terrain_modifiers": "Each province has one or more terrain features. Weight is added for each feature present.",
+        "combat_actions": "Battles continue until one side runs out of morale or manpower. Winner advances front based on occupation value."
+      }
+    },
+    "implementation_guide": {
+      "terrain_system": {
+        "types": ["plains", "grassland", "desert", "forest", "hills", "mountain", "tundra", "jungle", "wetland", "ocean"],
+        "combat_effects": {
+          "defense_bonus": "number",
+          "movement_cost": "multiplier",
+          "combat_width": "percentage"
+        },
+        "production_effects": {
+          "farm_size": "percentage",
+          "mine_efficiency": "percentage"
+        }
+      }
+    }
+  },
+
+  "2_3_resources": {
+    "title": "2.3 Resources System",
+    "research": {
+      "web_definition": {
+        "what_is": "Resources are materials that drive economic simulation, building construction, military production, and population welfare. They include both base resources and discoverable resources.",
+        "what_exists": "Victoria 3 has four main resource types: Staple (food, wood), Industrial (iron, coal, rubber, lead), Luxury (silk, tea), Military (small arms, ammunition). Discoverable: Oil, Gold, Rubber.",
+        "how_to_use": "Resources determine building capacity in states. Each state has Arable Land (agriculture limit) and Resource Potential (mining limit). Buildings produce goods consumed by pops and other buildings.",
+        "how_to_integrate": "Resources are tied to State Regions. Arable land limits agriculture/plantation buildings. Resource potential limits mining/extractive buildings. Discoverable resources need technology to be discovered.",
+        "how_to_expand": "Resources can be discovered during gameplay through technology. Oil, gold, and rubber are discoverable. Discovery chances increase with certain technologies."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Goods",
+        "https://vic3.paradoxwikis.com/State#Arable_land",
+        "https://www.strateggames.com/a/oil-in-victoria-3/"
+      ]
+    },
+    "key_details": {
+      "resource_categories": {
+        "staple": {
+          "description": "Basic consumption goods for population needs",
+          "examples": ["Grain", "Fish", "Wood", "Textiles"],
+          "consumed_by": "Pops primarily"
+        },
+        "industrial": {
+          "description": "Resources used by buildings for production",
+          "examples": ["Coal", "Iron", "Steel", "Rubber", "Lead", "Sulfur"],
+          "consumed_by": "Buildings primarily"
+        },
+        "luxury": {
+          "description": "High-value goods for wealthy populations",
+          "examples": ["Tea", "Coffee", "Wine", "Silk", "Tobacco"],
+          "consumed_by": "Wealthy pops"
+        },
+        "military": {
+          "description": "Goods for military production",
+          "examples": ["Small Arms", "Ammunition", "Artillery", "Warships"],
+          "consumed_by": "Military buildings, warfare"
+        }
+      },
+      "discoverable_resources": {
+        "oil": {
+          "locations": ["Alberta", "Azerbaijan", "Basra", "California", "Texas", "Oklahoma"],
+          "extraction": "Oil Rigs (requires Pumpjacks technology) or Whaling Stations",
+          "technology_unlocks": "Pumpjacks after Steam Donkey and Dynamite",
+          "base_amount": "30-60 per state"
+        },
+        "gold": {
+          "locations": "Various states",
+          "extraction": "Gold Mines",
+          "discovery": "Can be discovered with technology"
+        },
+        "rubber": {
+          "locations": "Tropical regions",
+          "extraction": "Rubber Plantations (requires Vulcanization tech)",
+          "technology_unlocks": "Vulcanization"
+        }
+      },
+      "resource_limits": {
+        "arable_land": "Limits agriculture and plantation buildings",
+        "resource_potential": "Limits mining and extractive buildings",
+        "proportional_split": "Split states divide resources by province share"
+      }
+    },
+    "implementation_guide": {
+      "resource_system": {
+        "state_level": {
+          "arable_land": "number",
+          "resource_potential": "Record<ResourceType, number>"
+        },
+        "discovery": {
+          "type": "discoverable | always_available",
+          "discovery_chance": "number (percentage)",
+          "technology_required": "string[]"
+        },
+        "extraction": {
+          "building_requirements": "Resource requirements to build",
+          "input_goods": "Goods consumed",
+          "output_goods": "Goods produced"
+        }
+      }
+    }
+  },
+
+  "2_4_countries": {
+    "title": "2.4 Countries Data",
+    "research": {
+      "web_definition": {
+        "what_is": "Country definitions define every playable or non-playable nation in the game world with attributes like government, culture, religion, and territory.",
+        "what_exists": "Victoria 3 has playable countries (selectable), AI-only nations, decentralized (tribal), and formable nations. Countries have tags, colors, cultures, religions.",
+        "how_to_use": "Players select a playable country at game start. Countries own states, have governments, cultures, religions, treasuries, prestige.",
+        "how_to_integrate": "Country data includes: tag, name, color, government type, primary culture, religion, capital state, owned states, market membership.",
+        "how_to_expand": "Mods can add new countries, change historical data, create formable nations."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Countries"
+      ]
+    },
+    "implementation_guide": {
+      "country_structure": {
+        "id": "string",
+        "tag": "string (3-letter code)",
+        "name": "localized_key",
+        "color": "[r, g, b]",
+        "country_type": "playable | ai_only | decentralized | formable",
+        "tier": "empire | kingdom | duchy | county | tribal",
+        "government": "GovernmentType",
+        "capital_state": "state_id",
+        "primary_culture": "culture_id",
+        "religion": "religion_id",
+        "owned_states": "state_id[]",
+        "market_id": "market_id",
+        "treasury": "number",
+        "prestige": "number"
+      }
+    }
+  },
+
+  "2_5_infrastructure_market": {
+    "title": "2.5 Infrastructure and Market Access",
+    "research": {
+      "web_definition": {
+        "what_is": "Infrastructure determines how connected a state is to the market. Market access affects production efficiency and price volatility.",
+        "what_exists": "Infrastructure comes primarily from railways and ports. States require connection to market capital. Isolated states have 0% market access.",
+        "how_to_use": "Higher infrastructure = better market access = more efficient production. Overseas states require convoys for market access.",
+        "how_to_integrate": "Market access = percentage based on infrastructure and connectivity. Low access reduces efficiency and causes price issues.",
+        "how_to_expand": "Build railways, ports, and other infrastructure. Maintain shipping lanes for overseas territories."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/State#Infrastructure_and_market_access"
+      ]
+    },
+    "key_details": {
+      "market_access_calculation": "Primarily percentage based on infrastructure and connection to market capital",
+      "infrastructure_sources": ["Railways", "Ports", "Other buildings"],
+      "overseas_requires": "Convoys and shipping lanes",
+      "tax_capacity": "1 point per 10,000 population for full tax"
+    }
+  },
+
+  "2_6_world_generation": {
+    "title": "2.6 World Generation / Map Loading",
+    "research": {
+      "web_definition": {
+        "what_is": "Systems for generating or loading map data including provinces, states, countries, and initial conditions.",
+        "what_exists": "Victoria 3 uses province map (provinces.png) + state region definitions. Map data in map_data/state_regions/. Can use GeoJSON, custom JSON, or heightmap formats.",
+        "how_to_use": "Load province IDs from map image (hex color codes). Define state regions with provinces, traits, hubs. Create states in history files.",
+        "how_to_integrate": "Parser reads map format → converts to internal province/state/region structures → validates adjacency and completeness.",
+        "how_to_expand": "Procedural generation using noise functions. Hybrid: base terrain procedurally + handcrafted refinement."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/State_modding",
+        "https://vic3.paradoxwikis.com/New_state_modding"
+      ]
+    },
+    "map_data_format": {
+      "province_map": "provinces.png - color-coded image",
+      "state_regions": "map_data/state_regions/*.txt",
+      "history": "common/history/states/*.txt",
+      "definition": {
+        "state_region": "STATE_NAME = { id, provinces[], traits{}, city, farm, port, mine, wood, arable_land, resources }",
+        "state": "create_state = { country, owned_provinces }",
+        "strategic_region": "region_name = { graphical_culture, capital_province, states[] }"
+      }
+    }
+  },
+
+  "checklist": [
+    "Map Data Structures (Province/State/Region)",
+    "Terrain Types (combat, movement, production)",
+    "Resources System (discovery, extraction, limits)",
+    "Countries Data (definitions, tags, colors)",
+    "Infrastructure and Market Access",
+    "World Generation (procedural/loaded)"
+  ],
+  "deliverable": "Playable world with states and geographic data",
+  "references": [
+    {
+      "title": "Victoria 3 Wiki - State",
+      "url": "https://vic3.paradoxwikis.com/State"
+    },
+    {
+      "title": "Victoria 3 Dev Diary #16 - States",
+      "url": "https://forum.paradoxplaza.com/forum/developer-diary/victoria-3-dev-diary-16-states.1491897/"
+    },
+    {
+      "title": "Deep Dive: Modeling the global economy in Victoria 3",
+      "url": "https://www.gamedeveloper.com/design/deep-dive-modeling-the-global-economy-in-victoria-3"
+    },
+    {
+      "title": "Victoria 3 Wiki - Land warfare",
+      "url": "https://vic3.paradoxwikis.com/Land_warfare"
+    },
+    {
+      "title": "Victoria 2 Wiki - Terrain",
+      "url": "https://vic2.paradoxwikis.com/Terrain"
+    },
+    {
+      "title": "Victoria 3 Wiki - Goods",
+      "url": "https://vic3.paradoxwikis.com/Goods"
+    },
+    {
+      "title": "StrateGGames - Oil in Victoria 3",
+      "url": "https://www.strateggames.com/a/oil-in-victoria-3/"
+    }
+  ]
+}

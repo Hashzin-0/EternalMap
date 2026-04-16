@@ -1,0 +1,438 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 9: SAVE/LOAD SYSTEM - Complete Research",
+  "description": "Game state serialization, IndexedDB storage, multiple slots, auto-save and version migration",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Victoria 3 Wiki - Save-game editing",
+      "MDN - IndexedDB API",
+      "LZ-String GitHub"
+    ]
+  },
+  "topicos": {
+    "serialization": {
+      "nome": "Game State Serialization",
+      "descricao": "Processo de converter o estado do jogo em formato armazenamento",
+      "subtopicos": {
+        "state_snapshot": {
+          "nome": "State Snapshot Structure",
+          "descricao": "Estrutura completa do estado do jogo para serialização",
+          "componentes": {
+            "world_data": {
+              "nome": "World Data",
+              "elementos": ["Provinces", "Terrains", "Resources", "Countries", "Borders", "Grid configuration"]
+            },
+            "economy": {
+              "nome": "Economy State",
+              "elementos": ["Treasury", "GDP", "Market prices", "Goods production", "Buildings", "Construction queue", "Trade routes"]
+            },
+            "population": {
+              "nome": "Population State",
+              "elementos": ["Pops by province", "Pop types", "Needs satisfaction", "SOL calculations", "Migration data", "Culture/Religion distribution"]
+            },
+            "politics": {
+              "nome": "Politics State",
+              "elementos": ["Government type", "Laws enacted", "Interest groups", "Ideologies", "Elections", "Ruler"]
+            },
+            "technology": {
+              "nome": "Technology State",
+              "elementos": ["Researched technologies", "Active research", "Innovation points", "Tech progress"]
+            },
+            "diplomacy": {
+              "nome": "Diplomacy State",
+              "elementos": ["Relations", "Treaties", "Wars", "Subjects", "Diplomatic plays"]
+            },
+            "military": {
+              "nome": "Military State",
+              "elementos": ["Armies", "Fleets", "Garrisons", "Recruitment"]
+            },
+            "meta": {
+              "nome": "Metadata",
+              "elementos": ["Save timestamp", "Game version", "Play time", "In-game date", "Player country"]
+            }
+          }
+        },
+        "serialization_format": {
+          "nome": "Serialization Format",
+          "descricao": "Formato de codificação dos dados",
+          "opcoes": [
+            {"nome": "JSON", "pros": "Legível, debugável, fácil parsing", "contras": "Maior tamanho, parsing overhead"},
+            {"nome": "Binary (Buffer)", "pros": "Compacto, rápido", "contras": "Difícil debug, requer schema"},
+            {"nome": "Compressed JSON", "pros": "Bom equilíbrio tamanho/legibilidade", "contros": "Compressão overhead"}
+          ],
+          "recomendacao": "JSON compactado com LZ-string para browser - permite debug enquanto mantém performance"
+        },
+        "what_to_serialize": {
+          "nome": "What to Serialize",
+          "descricao": "O que incluir e o que omitir",
+          "incluir": [
+            "GameCore state (pure logic state)",
+            "Zustand stores",
+            "Game date and speed",
+            "Player nation selection",
+            "All game systems state"
+          ],
+          "omitir": [
+            "Phaser scene instances",
+            "UI state (can reconstruct)",
+            "Temporary calculations",
+            "Event listeners"
+          ],
+          "explicacao": "O estado do jogo deve ser serializável - Phaser é recriado ao carregar baseado no estado salvo"
+        }
+      }
+    },
+    "indexeddb_storage": {
+      "nome": "IndexedDB Storage",
+      "descricao": "Sistema de armazenamento persistente no browser",
+      "subtopicos": {
+        "database_structure": {
+          "nome": "Database Structure",
+          "descricao": "Schema do banco de dados IndexedDB",
+          "database_name": "eternalmap_saves",
+          "object_stores": [
+            {
+              "nome": "saves",
+              "keyPath": "slotId",
+              "indexes": [
+                {"nome": "timestamp", "unique": false},
+                {"nome": "gameDate", "unique": false},
+                {"nome": "countryId", "unique": false}
+              ]
+            },
+            {
+              "nome": "settings",
+              "keyPath": "key"
+            },
+            {
+              "nome": "metadata",
+              "keyPath": "version"
+            }
+          ]
+        },
+        "storage_operations": {
+          "nome": "Storage Operations",
+          "descricao": "Operações CRUD no IndexedDB",
+          "operacoes": {
+            "save": {
+              "descricao": "Salvar estado do jogo",
+              "passos": [
+                "1. Get game state from Zustand stores",
+                "2. Create save object with metadata",
+                "3. Serialize to JSON",
+                "4. Compress with LZ-string",
+                "5. Open IndexedDB transaction",
+                "6. Write to 'saves' store",
+                "7. Update save slot metadata"
+              ]
+            },
+            "load": {
+              "descricao": "Carregar estado do jogo",
+              "passos": [
+                "1. Read from 'saves' store by slotId",
+                "2. Decompress data",
+                "3. Parse JSON",
+                "4. Validate version compatibility",
+                "5. Dispatch to Zustand stores",
+                "6. Reinitialize Phaser scene",
+                "7. Verify state integrity"
+              ]
+            },
+            "delete": {
+              "descricao": "Excluir save",
+              "passos": [
+                "1. Open transaction",
+                "2. Delete from 'saves' store",
+                "3. Update UI slot list"
+              ]
+            },
+            "list": {
+              "descricao": "Listar saves disponíveis",
+              "passos": [
+                "1. Open cursor on 'saves' store",
+                "2. Read metadata (no full data)",
+                "3. Return list sorted by timestamp"
+              ]
+            }
+          }
+        },
+        "error_handling": {
+          "nome": "Error Handling",
+          "descricao": "Tratamento de erros de armazenamento",
+          "cenarios": [
+            {"cenario": "Storage full", "solucao": "Alert user, suggest deleting old saves"},
+            {"cenario": "Corrupted data", "solucao": "Validate JSON parse, show error, offer recovery"},
+            {"cenario": "Version mismatch", "solucao": "Run migration or show incompatibility message"},
+            {"cenario": "IndexedDB not available", "solucao": "Fallback to localStorage with size warning"}
+          ]
+        }
+      }
+    },
+    "save_slots": {
+      "nome": "Save Slots",
+      "descricao": "Sistema de slots de salvamento",
+      "subtopicos": {
+        "slot_count": {
+          "nome": "Slot Count",
+          "descricao": "Número de slots disponíveis",
+          "total_slots": 12,
+          "distribuicao": [
+            {"tipo": "Manual saves", "slots": "1-8", "descricao": "Slots livres para o jogador"},
+            {"tipo": "Auto saves", "slots": "9-11", "descricao": "Auto-saves rotativos"},
+            {"tipo": "Quick save", "slot": "12", "descricao": "Quick save único"}
+          ]
+        },
+        "slot_data": {
+          "nome": "Slot Data Structure",
+          "descricao": "Dados armazenados por slot",
+          "elementos": {
+            "slotId": "Número do slot (1-12)",
+            "name": "Nome do save (editável)",
+            "timestamp": "Data/hora real do salvamento",
+            "gameDate": "Data no jogo (ano/mês)",
+            "countryId": "ID do país jogado",
+            "playTime": "Tempo total de jogo",
+            "version": "Versão do jogo",
+            "thumbnail": "Miniatura (base64)",
+            "data": "Dados comprimidos do estado"
+          }
+        },
+        "slot_management": {
+          "nome": "Slot Management",
+          "descricao": "Gerenciamento de slots",
+          "features": [
+            "Rename save slots",
+            "Copy save to another slot",
+            "Sort by date/name/time",
+            "Filter by country",
+            "Search by name"
+          ]
+        }
+      }
+    },
+    "auto_save": {
+      "nome": "Auto-Save System",
+      "descricao": "Sistema de salvamento automático",
+      "subtopicos": {
+        "auto_save_triggers": {
+          "nome": "Auto-Save Triggers",
+          "descricao": "Quando o auto-save ocorre",
+          "opcoes": [
+            {"nome": "Monthly", "descricao": "A cada mês no jogo", "frequencia": "1x por mês"},
+            {"nome": "Weekly", "descricao": "A cada semana no jogo", "frequencia": "4x por mês"},
+            {"nome": "Daily", "descricao": "A cada dia no jogo", "frequencia": "30x por mês"},
+            {"nome": "On events", "descricao": "Após eventos significativos", "frequencia": "variável"},
+            {"nome": "Manual only", "descricao": "Desativar auto-save", "frequencia": "nenhum"}
+          ],
+          "default": "Monthly"
+        },
+        "auto_save_rotation": {
+          "nome": "Auto-Save Rotation",
+          "descricao": "Sistema de rotação entre slots de auto-save",
+          "implementacao": "3 slots rotativos (9,10,11) - sobrescreve o mais antigo",
+          "strategy": "Circular buffer - após 3 autosaves, volta ao primeiro",
+          "metadata": "Manter timestamp de cada auto-save para display"
+        },
+        "auto_save_settings": {
+          "nome": "Auto-Save Settings",
+          "descricao": "Configurações do auto-save",
+          "opcoes": [
+            {"nome": "Enable/disable", "descricao": "Ligar/desligar auto-save"},
+            {"nome": "Frequency", "descricao": "Frequência (monthly/weekly/daily)"},
+            {"nome": "Slot rotation", "descricao": "Usar slots 9-11 ou criar novos"},
+            {"nome": "Notification", "descricao": "Mostrar notificação ao auto-savear"}
+          ]
+        }
+      }
+    },
+    "quick_save": {
+      "nome": "Quick Save/Load",
+      "descricao": "Sistema de save rápido",
+      "subtopicos": {
+        "functionality": {
+          "nome": "Functionality",
+          "descricao": "Comportamento do quick save",
+          "keybind": "F5 (save) / F9 (load)",
+          "slot": "Slot 12 dedicado",
+          "behavior": "Sobrescreve instantaneamente sem confirmação"
+        },
+        "limitations": {
+          "nome": "Limitations",
+          "descricao": "Restrições do quick save",
+          "restricoes": [
+            "Não disponível durante diplomacia ativa",
+            "Não disponível durante guerra ativa",
+            "Mostrar warning se tentar save durante eventos críticos"
+          ]
+        }
+      }
+    },
+    "version_migration": {
+      "nome": "Version Migration",
+      "descricao": "Migração de saves entre versões do jogo",
+      "subtopicos": {
+        "version_check": {
+          "nome": "Version Check",
+          "descricao": "Verificação de compatibilidade de versão",
+          "processo": [
+            "1. Ler versão do save (campo metadata.version)",
+            "2. Comparar com versão atual do jogo",
+            "3. Se diferente, verificar schema de migração"
+          ]
+        },
+        "migration_strategies": {
+          "nome": "Migration Strategies",
+          "descricao": "Estratégias para diferentes cenários",
+          "cenarios": [
+            {"cenario": "Minor version (patch)", "estrategia": "Auto-migração automática", "exemplo": "1.0.0 → 1.0.1"},
+            {"cenario": "Major version", "estrategia": "Possível necessidade de manual fix", "exemplo": "1.0.0 → 2.0.0"},
+            {"cenario": "Beta version", "estrategia": "Não suportado, avisar usuário", "exemplo": "1.0.0-beta → 1.0.0"}
+          ]
+        },
+        "migration_script": {
+          "nome": "Migration Script",
+          "descricao": "Script de migração automático",
+          "estrutura": {
+            "migrations": "Array de funções de migração por versão",
+            "runMigrations": "Executar migrações em sequência",
+            "fallback": "Se migração falhar, oferecer reset de campanha"
+          }
+        }
+      }
+    },
+    "save_validation": {
+      "nome": "Save Validation",
+      "descricao": "Validação de integridade do save",
+      "subtopicos": {
+        "integrity_check": {
+          "nome": "Integrity Check",
+          "descricao": "Verificação de integridade",
+          "checks": [
+            "JSON parse válido",
+            "Campos obrigatórios presentes",
+            "Tipos de dados corretos",
+            "Valores dentro de ranges válidos",
+            "Referências entre entidades válidas"
+          ]
+        },
+        "corruption_recovery": {
+          "nome": "Corruption Recovery",
+          "descricao": "Recuperação de dados corrompidos",
+          "estrategias": [
+            "Backup automático antes de sobrescrever",
+            "Tentar recovery de backup",
+            "Oferecer modo de debugging para recuperar o que for possível",
+            "Log de erros para análise"
+          ]
+        }
+      }
+    },
+    "save_menu_ui": {
+      "nome": "Save/Load Menu UI",
+      "descricao": "Interface do menu de salvar/carregar",
+      "subtopicos": {
+        "save_menu": {
+          "nome": "Save Menu",
+          "descricao": "Tela de salvar jogo",
+          "elementos": [
+            "Lista de slots com scroll",
+            "Thumbnail do save",
+            "Nome do save (editável)",
+            "Data do jogo",
+            "Tempo de jogo",
+            "Botão Save",
+            "Botão Cancel"
+          ]
+        },
+        "load_menu": {
+          "nome": "Load Menu",
+          "descricao": "Tela de carregar jogo",
+          "elementos": [
+            "Lista de slots",
+            "Thumbnail preview",
+            "Informação do save",
+            "Botão Load",
+            "Botão Delete",
+            "Botão Cancel"
+          ]
+        },
+        "slot_details": {
+          "nome": "Slot Details Panel",
+          "descricao": "Detalhes do slot ao selecionar",
+          "informacoes": [
+            "País jogado (bandeira)",
+            "Governo",
+            "GDP",
+            "População",
+            "Technologia atual",
+            "Relações ativas"
+          ]
+        }
+      }
+    },
+    "implementation_details": {
+      "nome": "Implementation Details",
+      "descricao": "Detalhes técnicos de implementação",
+      "subtopicos": {
+        "lz_string_compression": {
+          "nome": "LZ-String Compression",
+          "descricao": "Compressão de dados para save",
+          "biblioteca": "lz-string",
+          "processo": "JSON.stringify → LZString.compressToUTF16 → IndexedDB",
+          "tamanho_esperado": "Redução de ~70% do tamanho original"
+        },
+        "thumbnail_generation": {
+          "nome": "Thumbnail Generation",
+          "descricao": "Miniatura do jogo",
+          "implementacao": "Phaser canvas.toDataURL() em resolução reduzida (320x180)",
+          "timing": "Gerado ao salvar, armazenado como base64"
+        },
+        "store_integration": {
+          "nome": "Zustand Store Integration",
+          "descricao": "Integração com stores",
+          "processo": [
+            "1. Exportar todas as stores para objeto único",
+            "2. Remover dados não-serializáveis (functions, classes)",
+            "3. Adicionar metadata",
+            "4. Comprimir e salvar"
+          ],
+          "rehydration": "importRootStateListener para reidratar stores ao carregar"
+        }
+      }
+    },
+    "ironman_mode": {
+      "nome": "Ironman Mode (Future)",
+      "descricao": "Modo sem saves (opcional para expansão futura)",
+      "descricao_detalhada": "Victoria 3 tem Ironman que força saves automáticos mensais e impede carregar saves antigos. Implementação futura pode incluir:",
+      "features": [
+        "Salva apenas no slot atual",
+        "Sem possibilidade de carregar após fechar",
+        "Conquistas vinculadas ao modo",
+        "Rastreamento deachievements em memória"
+      ]
+    }
+  },
+  "expansoes_futuras": [
+    "Cloud save via servidor backend",
+    "Sistema de backup automático para a nuvem",
+    "Import/export de saves como arquivo para compartilhar",
+    "Ironman mode com conquistas",
+    "Replay system - gravando states para replay",
+    "Save editor integrado (debug mode)"
+  ],
+  "references": [
+    {
+      "title": "Victoria 3 Wiki - Save Game Editing",
+      "url": "https://vic3.paradoxwikis.com/Save-game_editing"
+    },
+    {
+      "title": "MDN - IndexedDB API",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API"
+    },
+    {
+      "title": "LZ-String Compression",
+      "url": "https://github.com/pieroxy/lz-string"
+    }
+  ]
+}

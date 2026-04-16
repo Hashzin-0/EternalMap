@@ -1,0 +1,484 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 8: UI/UX INTERFACE - Complete Research",
+  "description": "UI/UX complete Victoria 3 style - panels, bars, menus, interactions",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Victoria 3 Wiki - User Interface",
+      "Gamepressure - Game Interface",
+      "Attack of the Fanboy - UI Guide",
+      "Paradox Dev Diary #30 - UI Overview"
+    ]
+  },
+  "topicos": {
+    "map_ui": {
+      "nome": "Map UI Elements",
+      "descricao": "Elementos de UI sobrepostos ao mapa do jogo",
+      "subtopicos": {
+        "minimap": {
+          "nome": "Minimap",
+          "descricao": "Miniatura do mundo no canto da tela mostrando posição atual",
+          "componentes": ["Viewport rectangle", "Zoom level indicator", "Click to navigate"],
+          "implementacao": "Phaser scene overlay - minimap camera rendering with click detection for teleportation",
+          "interacoes": ["Click: teleport to location", "Hover: show coordinates", "Drag: pan viewport"]
+        },
+        "province_overlays": {
+          "nome": "Province Overlays",
+          "descricao": "Sobreposição visual nas províncias mostrando informação contextual",
+          "tipos": ["Owner color overlay", "Resources highlight", "SOL heat map", "GDP distribution", "Culture distribution", "Infamy overlay"],
+          "implementacao": "Tilemap tinting ou Graphics overlay no Phaser - cada lens modifica o visual",
+          "interacoes": ["Hover: show tooltip", "Click: select province", "Double-click: open province details"]
+        },
+        "terrain_tooltips": {
+          "nome": "Terrain Tooltips",
+          "descricao": "Tooltips detalhados ao passar o mouse sobre províncias",
+          "informacoes": ["Province name", "Owner country", "Terrain type", "Resources", "Population", "GDP contribution"],
+          "implementacao": "HTML overlay - Phaser pointer events dispatch React tooltip component",
+          "interacoes": ["Hover (200ms delay): show tooltip", "Locked hover: persist tooltip"]
+        },
+        "navigation": {
+          "nome": "Navigation Controls",
+          "descricao": "Controles de navegação do mapa",
+          "componentes": ["WASD/Arrow keys", "Mouse edge pan", "Scroll wheel zoom", "Middle mouse drag", "Tab: instant world overview"],
+          "implementacao": "Input manager no Phaser - camera bounds e zoom limits configuráveis"
+        }
+      }
+    },
+    "top_bar": {
+      "nome": "Top Bar",
+      "descricao": "Barra superior com informações vitais do país",
+      "subtopicos": {
+        "calendar_widget": {
+          "nome": "Calendar Widget",
+          "descricao": "Display de data e controles de velocidade",
+          "elementos": ["Year display (1836-1936)", "Month indicator", "Day counter", "Pause button", "Speed controls (1x, 2x, 3x, 5x)", "Menu hamburger icon"],
+          "implementacao": "React fixed position top-center - comunica com Zustand game speed store",
+          "interacoes": ["Click pause: toggle game state", "Click speed: cycle through speeds", "Click menu: open pause menu"]
+        },
+        "capacities": {
+          "nome": "Resource Capacities",
+          "descricao": "Barras de recursos do país",
+          "recursos": [
+            {"nome": "Bureaucracy", "descricao": "Administração e gestão", "icones": ["scroll"]},
+            {"nome": "Leadership", "descricao": "Liderança militar e diplomática", "icones": ["star"]},
+            {"nome": "Construction", "descricao": "Capacidade de construção", "icones": ["hammer"]},
+            {"nome": "Trade", "descricao": "Rotas comerciais", "icones": ["ship"]}
+          ],
+          "implementacao": "React horizontal flex - Zustand stores para cada resource com progress bars",
+          "interacoes": ["Hover: show capacity breakdown tooltip"]
+        },
+        "current_situation": {
+          "nome": "Current Situation",
+          "descricao": "Botão de alertas e situações ativas",
+          "tipos": ["Red: critical issues", "Yellow: warnings", "Blue: information", "Gold glow: new items"],
+          "implementacao": "React component com Zustand notifications store - collapsible categories",
+          "interacoes": ["Click: expand situation list", "Hover: quick preview", "Right-click: dismiss item"]
+        },
+        "notifications": {
+          "nome": "Message Settings",
+          "descricao": "Configuração de como alertas aparecem",
+          "implementacao": "React modal com Zustand notification preferences store",
+          "interacoes": ["Click icon: open settings", "Toggle: enable/disable notification types"]
+        },
+        "vickypedia": {
+          "nome": "Vickypedia",
+          "descricao": "Enciclopédia do jogo com definições e tutoriais",
+          "implementacao": "React full-screen overlay com search e categorized content",
+          "interacoes": ["Click icon: open encyclopedia", "Search: filter entries", "Click term: show explanation"]
+        }
+      }
+    },
+    "left_bar": {
+      "nome": "Left Side Bar",
+      "descricao": "Barra lateral esquerda com tabs de navegação principal",
+      "tabs": [
+        {"nome": "Politics", "icone": "crown", "atalho": "F1", "descricao": "Governo, leis, grupos de interesse"},
+        {"nome": "Budget", "icone": "coins", "atalho": "F2", "descricao": "Finanças, impostos, dívida"},
+        {"nome": "Buildings", "icone": "factory", "atalho": "F3", "descricao": "Edifícios, construção, infraestrutura"},
+        {"nome": "Market", "icone": "scale", "atalho": "F4", "descricao": "Comércio, rotas, preços"},
+        {"nome": "Military", "icone": "sword", "atalho": "F5", "descricao": "Exército, marinha, fortalezas"},
+        {"nome": "Diplomacy", "icone": "handshake", "atalho": "F6", "descricao": "Relações, guerras, acordos"},
+        {"nome": "Technology", "icone": "lightbulb", "atalho": "F7", "descricao": "Árvore tecnológica, pesquisas"},
+        {"nome": "Cultures", "icone": "globe", "atalho": "F8", "descricao": "Culturas, religiões, idiomas"},
+        {"nome": "Population", "icone": "users", "atalho": "F9", "descricao": "Pops, classes, migração"},
+        {"nome": "Journal", "icone": "book", "atalho": "F10", "descricao": "Objetivos e tarefas ativas"},
+        {"nome": "Outliner", "icone": "list", "atalho": "Shift+F1", "descricao": "Lista de países seletos"},
+        {"nome": "Map List", "icone": "map", "atalho": "Q", "descricao": "Lista de países filtrável"}
+      ],
+      "implementacao": "React sidebar com Zustand activeTab store - colapsável com animação",
+      "interacoes": ["Click: open tab", "Hover: show tooltip", "Keyboard shortcut: activate tab", "Collapse button: minimize to icons"]
+    },
+    "bottom_lenses": {
+      "nome": "Lenses Panel",
+      "descricao": "Barra de lentes na parte inferior para rápida interação",
+      "lenses": [
+        {"nome": "Production Lens", "icone": "factory", "descricao": "Construir edifícios de produção", "map_mode": "resources"},
+        {"nome": "Political Lens", "icone": "crown", "descricao": "Construir edifícios administrativos e políticas", "map_mode": "politics"},
+        {"nome": "Diplomatic Lens", "icone": "globe", "descricao": "Demandas diplomáticas e guerras", "map_mode": "diplomacy"},
+        {"nome": "Military Lens", "icone": "sword", "descricao": "Gerenciar militares e guerras", "map_mode": "military"}
+      ],
+      "auxiliary_lenses": [
+        {"nome": "Location Finder", "icone": "search", "descricao": "Buscar país, cidade ou região"},
+        {"nome": "Production Methods", "icone": "cog", "descricao": "Métodos de produção por edifício"}
+      ],
+      "implementacao": "React bottom fixed bar - cada lens altera o state do Phaser overlay",
+      "interacoes": ["Click: activate lens and map mode", "Hover: show lens description"]
+    },
+    "economy_panel": {
+      "nome": "Economy Panel",
+      "descricao": "Painel de economia e finanças (F2 Budget)",
+      "subtopicos": {
+        "treasury": {
+          "nome": "Treasury Overview",
+          "descricao": "Visão geral das finanças do país",
+          "elementos": ["Gold reserves", "National debt", "Daily income", "Daily expenses", "Tax revenue breakdown"],
+          "implementacao": "React component com Zustand treasury store",
+          "interacoes": ["Hover: show detailed breakdown"]
+        },
+        "taxes": {
+          "nome": "Tax Configuration",
+          "descricao": "Configuração de impostos por classe",
+          "classes": ["Upper", "Middle", "Lower", "Capitalists", "Industrials"],
+          "implementacao": "React form com Zustand taxRates store - slider por classe",
+          "interacoes": ["Drag slider: adjust rate", "Click: set specific value"]
+        },
+        "budget": {
+          "nome": "Budget Allocation",
+          "descricao": "Alocação de orçamento governamental",
+          "categorias": ["Military", "Education", "Healthcare", "Infrastructure", "Administration", "Industrial Subsidies"],
+          "implementacao": "React allocation sliders com Zustand budget store",
+          "interacoes": ["Drag: adjust percentage allocation"]
+        },
+        "debts": {
+          "nome": "National Debt",
+          "descricao": "Gerenciamento de dívida",
+          "elementos": ["Total debt", "Debt interest rate", "Debt maturity", "Take new loans", "Pay off debt"],
+          "implementacao": "React debt management interface com bank interactions"
+        }
+      }
+    },
+    "buildings_panel": {
+      "nome": "Buildings Panel",
+      "descricao": "Painel de edifícios e construção (F3)",
+      "subtopicos": {
+        "building_list": {
+          "nome": "Building List",
+          "descricao": "Lista de todos os edifícios",
+          "categorias": ["Urban", "Rural", "Infrastructure", "Administrative", "Military"],
+          "colunas": ["Name", "Type", "Level", "Workers", "Inputs", "Outputs", "Profit"],
+          "implementacao": "React virtualized list com Zustand buildings store",
+          "interacoes": ["Click row: select building", "Double-click: edit production methods"]
+        },
+        "construction_queue": {
+          "nome": "Construction Queue",
+          "descricao": "Fila de construção de edifícios",
+          "elementos": ["Building name", "Location", "Progress bar", "Cost", "Days remaining", "Cancel button"],
+          "implementacao": "React draggable list com Zustand constructionQueue store",
+          "interacoes": ["Drag: reorder priority", "Click cancel: remove from queue"]
+        },
+        "new_construction": {
+          "nome": "New Construction",
+          "descricao": "Construir novos edifícios",
+          "tipos": ["Production buildings", "Infrastructure", "Military", "Administrative"],
+          "implementacao": "React form com Phaser map click para selecionar localização",
+          "interacoes": ["Select type: show available locations", "Click map: place construction"]
+        }
+      }
+    },
+    "market_panel": {
+      "nome": "Market Panel",
+      "descricao": "Painel de mercado e comércio (F4)",
+      "subtopicos": {
+        "goods_list": {
+          "nome": "Goods List",
+          "descricao": "Lista de bens e preços",
+          "elementos": ["Good name", "Current price", "Price trend", "Domestic supply", "Domestic demand", "Import/Export"],
+          "implementacao": "React table com Zustand marketStore - real-time price updates",
+          "interacoes": ["Click: select good for details", "Hover: show price history chart"]
+        },
+        "trade_routes": {
+          "nome": "Trade Routes",
+          "descricao": "Rotas comerciais ativas",
+          "elementos": ["Route name", "From", "To", "Good", "Amount", "Profit", "Status"],
+          "implementacao": "React list com Zustand tradeRoutes store",
+          "interacoes": ["Click: view/edit route", "Add button: create new route"]
+        },
+        "trade_settings": {
+          "nome": "Trade Settings",
+          "descricao": "Configurações de importação/exportação",
+          "elementos": ["Import duties", "Export tariffs", "Trade agreements", "Embargoes"],
+          "implementacao": "React form com Zustand tradePolicy store"
+        }
+      }
+    },
+    "population_panel": {
+      "nome": "Population Panel",
+      "descricao": "Painel de população (F9)",
+      "subtopicos": {
+        "pop_overview": {
+          "nome": "Population Overview",
+          "descricao": "Visão geral da população",
+          "elementos": ["Total population", "Growth rate", "Literacy rate", "Employment rate", "SOL average"],
+          "implementacao": "React dashboard com Zustand population store"
+        },
+        "pop_classes": {
+          "nome": "Pop Classes",
+          "descricao": "Distribuição por classe social",
+          "classes": ["Aristocrats", "Capitalists", "Burghers", "Craftsmen", "Farmers", "Labourers", "Soldiers", "Clergymen", "Officers", " clerks"],
+          "implementacao": "React stacked bar chart - Zustand popByClass store",
+          "interacoes": ["Click class: see detailed breakdown", "Hover: show numbers"]
+        },
+        "pop_needs": {
+          "nome": "Needs Satisfaction",
+          "descricao": "Satisfação de necessidades por classe",
+          "necessidades": ["Food", "Clothing", "Housing", "Entertainment", "Health", "Education"],
+          "implementacao": "React heatmap grid - Zustand needsStore com visual gradient",
+          "interacoes": ["Hover: show exact percentage"]
+        },
+        "migration": {
+          "nome": "Migration Arrows",
+          "descricao": "Indicadores de migração no mapa",
+          "tipos": ["Internal migration", "Emigration", "Immigration"],
+          "implementacao": "Phaser graphics overlay - arrows pointing migration direction",
+          "interacoes": ["Click arrow: see migration details"]
+        }
+      }
+    },
+    "politics_panel": {
+      "nome": "Politics Panel",
+      "descricao": "Painel político (F1)",
+      "subtopicos": {
+        "government": {
+          "nome": "Government Info",
+          "descricao": "Informações do governo",
+          "elementos": ["Government type", "Ruler name", "Legitimacy", "Authority", " Succession type"],
+          "implementacao": "React card com Zustand government store"
+        },
+        "laws": {
+          "nome": "Laws Grid",
+          "descricao": "Grade de leis do jogo",
+          "categorias": [
+            {"nome": "Economic Laws", "leis": ["Agrarianism", "Free Trade", "Protectionism", "Cartel", "Socialist", "Commune"]},
+            {"nome": "Political Laws", "leis": ["Autocracy", "Oligarchy", "Parliamentary", "Republic"]},
+            {"nome": "Military Laws", "leis": ["Peacetime Draft", "Conscription", "Volunteer Army", "Mass Conscription"]},
+            {"nome": "Social Laws", "leis": ["Census Suffrage", "Universal Suffrage", "No Public School", "Public School"]}
+          ],
+          "implementacao": "React grid com Zustand lawsStore - each law is clickable, shows requirements and effects",
+          "interacoes": ["Click: show law details", "Click enact: change law (if requirements met)"]
+        },
+        "interest_groups": {
+          "nome": "Interest Groups",
+          "descricao": "Grupos de interesse",
+          "grupos": ["Industrialists", "Rural Folk", "Trade Unions", "Intelligentsia", "Armed Forces", "Devout", "Landowners", "Burghers"],
+          "elementos": ["IG name", "Clout", "Approval", "Ideology", "Loyalty", "Membership"],
+          "implementacao": "React card list com Zustand interestGroupsStore",
+          "interacoes": ["Click: see IG details", "Click influence: adjust government support"]
+        },
+        "elections": {
+          "nome": "Elections",
+          "descricao": "Sistema electoral",
+          "elementos": ["Next election date", "Voter turnout", "Results", "Coalition options"],
+          "implementacao": "React modal when election triggers - Zustand electionStore",
+          "interacoes": ["Click: open election view", "Watch: see results animation"]
+        }
+      }
+    },
+    "technology_panel": {
+      "nome": "Technology Panel",
+      "descricao": "Painel tecnológico (F7)",
+      "subtopicos": {
+        "tech_tree": {
+          "nome": "Technology Tree",
+          "descricao": "Árvore de tecnologias visual",
+          "categorias": ["Production", "Military", "Society", "Commerce"],
+          "estados": ["Available", "Researching", "Researched", "Locked (requirements not met)"],
+          "implementacao": "React SVG/Canvas tree visualization - Zustand techTree store",
+          "interacoes": ["Click available: start research", "Click researched: see details", "Click locked: show requirements"]
+        },
+        "research_progress": {
+          "nome": "Research Progress",
+          "descricao": "Barra de progresso da pesquisa atual",
+          "elementos": ["Current tech name", "Progress bar", "Days remaining", "Innovation points"],
+          "implementacao": "React progress bar com Zustand activeResearch store"
+        },
+        "available_techs": {
+          "nome": "Available Technologies",
+          "descricao": "Lista de tecnologias disponíveis para pesquisa",
+          "implementacao": "React list with Zustand availableTechs store - sorted by category"
+        }
+      }
+    },
+    "diplomacy_panel": {
+      "nome": "Diplomacy Panel",
+      "descricao": "Painel diplomático (F6)",
+      "subtopicos": {
+        "relations": {
+          "nome": "Relations Matrix",
+          "descricao": "Matriz de relações com outros países",
+          "elementos": ["Country name", "Attitude", "Relations score", "Treaties", "Pacts"],
+          "implementacao": "React grid com Zustand relations store",
+          "interacoes": ["Click: select country for details", "Hover: show attitude tooltip"]
+        },
+        "diplomatic_plays": {
+          "nome": "Diplomatic Plays",
+          "descricao": "Jogos diplomáticos ativos",
+          "elementos": ["Play name", "Initiator", "Target", "Demands", "War support", "Status"],
+          "implementacao": "React list com Zustand diplomaticPlaysStore",
+          "interacoes": ["Click: view play details", "Click join: join as side"]
+        },
+        "wars": {
+          "nome": "Wars",
+          "descricao": "Guerras em andamento",
+          "elementos": ["War name", "Participants (allies/enemies)", "War progress", "Casualties", "War score"],
+          "implementacao": "React list com Zustand warsStore",
+          "interacoes": ["Click: open war interface", "Click white peace: negotiate end"]
+        },
+        "subjects": {
+          "nome": "Subjects",
+          "descricao": "Países subordinados",
+          "tipos": ["Vassal", "Puppet", "Protectorate", "Tributary"],
+          "implementacao": "React list com Zustand subjectsStore",
+          "interacoes": ["Click: see subject details", "Click release: grant independence"]
+        }
+      }
+    },
+    "military_panel": {
+      "nome": "Military Panel",
+      "descricao": "Painel militar (F5)",
+      "subtopicos": {
+        "armies": {
+          "nome": "Armies",
+          "descricao": "Exércitos e unidades",
+          "elementos": ["Unit name", "Location", "Size", "Morale", "Organization", "Equipment"],
+          "implementacao": "React list com Zustand armiesStore"
+        },
+        "fleets": {
+          "nome": "Fleets",
+          "descricao": "Frotas navais",
+          "elementos": ["Fleet name", "Location", "Ships", "Morale", "Orders"],
+          "implementacao": "React list com Zustand fleetsStore"
+        },
+        "recruitment": {
+          "nome": "Recruitment",
+          "descricao": "Recrutamento de unidades",
+          "implementacao": "React form com Phaser map click para location"
+        }
+      }
+    },
+    "menus": {
+      "nome": "Menus",
+      "descricao": "Menus do jogo",
+      "subtopicos": {
+        "main_menu": {
+          "nome": "Main Menu",
+          "descricao": "Menu principal",
+          "opcoes": [
+            {"nome": "New Game", "descricao": "Iniciar novo jogo"},
+            {"nome": "Resume", "descricao": "Continuar último jogo"},
+            {"nome": "Load Game", "descricao": "Carregar jogo salvo"},
+            {"nome": "Achievements", "descricao": "Conquistas"},
+            {"nome": "Vickypedia", "descricao": "Enciclopédia"},
+            {"nome": "Settings", "descricao": "Configurações"},
+            {"nome": "DLC", "descricao": "Conteúdo adicional"},
+            {"nome": "Exit", "descricao": "Sair do jogo"}
+          ],
+          "implementacao": "React full-screen overlay com state routing"
+        },
+        "pause_menu": {
+          "nome": "Pause Menu",
+          "descricao": "Menu de pausa (ESC)",
+          "opcoes": [
+            {"nome": "Resume", "descricao": "Continuar"},
+            {"nome": "Save Game", "descricao": "Salvar jogo"},
+            {"nome": "Load Game", "descricao": "Carregar jogo"},
+            {"nome": "Settings", "descricao": "Configurações"},
+            {"nome": "Main Menu", "descricao": "Voltar ao menu principal"}
+          ],
+          "implementacao": "React modal overlay com game state pause"
+        },
+        "save_load_menu": {
+          "nome": "Save/Load Menu",
+          "descricao": "Menu de salvar/carregar",
+          "slots": "8-12 save slots",
+          "elementos": ["Slot number", "Save name", "Date", "Playtime", "Thumbnail", "Delete button"],
+          "implementacao": "React grid com IndexedDB storage - thumbnail from canvas capture"
+        },
+        "settings_menu": {
+          "nome": "Settings Menu",
+          "descricao": "Menu de configurações",
+          "tabs": [
+            {"nome": "Graphics", "descricao": "Resolução, qualidade, vsync"},
+            {"nome": "Audio", "descricao": "Volume, música, efeitos"},
+            {"nome": "Game", "descricao": "Velocidade, tutorials, UI scale"},
+            {"nome": "Controls", "descricao": "Keybindings"}
+          ],
+          "implementacao": "React tabbed modal com localStorage persistence"
+        }
+      }
+    },
+    "implementation_architecture": {
+      "nome": "Implementation Architecture",
+      "descricao": "Arquitetura de implementação da UI",
+      "camadas": {
+        "phaser_layer": {
+          "nome": "Phaser Layer (Map)",
+          "responsabilidades": ["Renderização do mapa", "Province overlays", "Terrain tooltips triggers", "Minimap", "Navigation controls", "Migration arrows"],
+          "comunicacao": "Dispatch events para React via Zustand"
+        },
+        "react_layer": {
+          "nome": "React Layer (UI)",
+          "responsabilidades": ["Todos os painéis", "Menus", "Top bar", "Side bar", "Lenses", "Tooltips", "Modals"],
+          "estado": "Zustand stores"
+        },
+        "integration": {
+          "nome": "React-Phaser Integration",
+          "tecnicas": [
+            "next/dynamic com ssr:false para Game component",
+            "Zustand stores como bridge de comunicação",
+            "Phaser events dispatch para React handlers",
+            "React Portal para tooltips overlay"
+          ]
+        }
+      },
+      "state_management": {
+        "nome": "Zustand Stores",
+        "stores": [
+          "gameStore (speed, pause, date)",
+          "uiStore (activeTab, activePanel, tooltips)",
+          "notificationsStore (alerts, situations)",
+          "treasuryStore",
+          "buildingsStore",
+          "marketStore",
+          "populationStore",
+          "governmentStore",
+          "techTreeStore",
+          "diplomacyStore",
+          "militaryStore"
+        ]
+      }
+    }
+  },
+  "expansoes_futuras": [
+    "Tooltips aninhados com mais níveis de detalhe",
+    "Animações de transição entre painéis",
+    "Partículas e efeitos visuais",
+    "Tema visual alternativo (vintage colors)",
+    "Suporte a múltiplos monitores",
+    "UI responsiva para diferentes aspect ratios"
+  ],
+  "references": [
+    {
+      "title": "Victoria 3 Wiki - User Interface",
+      "url": "https://vic3.paradoxwikis.com/User_interface"
+    },
+    {
+      "title": "Game Interface Guide",
+      "url": "https://gamepressure.com/victoria-3/game-interface/z210557"
+    },
+    {
+      "title": "UI Guide - Attack of the Fanboy",
+      "url": "https://attackofthefanboy.com/guides/how-to-use-the-user-interface-in-victoria-3/"
+    }
+  ]
+}

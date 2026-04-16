@@ -9,7 +9,6 @@ permission:
   bash: allow
   write: allow
   question: allow
-  "*": deny
 ---
 
 # SEO Specialist

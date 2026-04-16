@@ -1,0 +1,384 @@
+{
+  "version": "3.0.0",
+  "title": "Fase 1: BASE - Setup e Engine de Jogo (Pesquisa Completa)",
+  "description": "Semanas 1-4 - Mapa 2D interativo com pan/zoom. Pesquisa completa com múltiplos agentes.",
+  "data_pesquisa": {
+    "total_agentes": 5,
+    "agentes": [
+      "Phaser 4 WebGPU + Alternativas",
+      "Game Loop Patterns", 
+      "Camera Controls",
+      "Tilemap Rendering",
+      "Zustand State Management"
+    ],
+    "data_compilacao": "2025"
+  },
+  "tasks": {
+    "1_1_setup_nextjs": {
+      "title": "1.1 Setup Next.js",
+      "description": "Inicializar projeto Next.js 14 com TypeScript e Tailwind CSS",
+      "commands": {
+        "create_project": "npx create-next-app@latest eternalmap --typescript --tailwind --eslint --app --src-dir"
+      },
+      "files": {
+        "tsconfig": {
+          "path": "tsconfig.json",
+          "content": {
+            "compilerOptions": {
+              "target": "ES2017",
+              "lib": ["dom", "dom.iterable", "esnext"],
+              "allowJs": true,
+              "skipLibCheck": true,
+              "strict": true,
+              "noEmit": true,
+              "esModuleInterop": true,
+              "module": "esnext",
+              "moduleResolution": "bundler",
+              "resolveJsonModule": true,
+              "isolatedModules": true,
+              "jsx": "preserve",
+              "incremental": true,
+              "plugins": [{ "name": "next" }],
+              "paths": { "@/*": ["./src/*"] }
+            }
+          }
+        },
+        "tailwind_config": {
+          "path": "tailwind.config.ts",
+          "content": {
+            "content": ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+            "theme": {
+              "extend": {
+                "colors": {
+                  "primary": { "50": "#f0f9ff", "500": "#0ea5e9", "600": "#0284c7" },
+                  "game": { "dark": "#1a1a2e", "panel": "#16213e", "border": "#0f3460" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "1_2_folder_structure": {
+      "title": "1.2 Estrutura de Pastas",
+      "description": "Criar estrutura three-layer (game-core, game, components)",
+      "structure": {
+        "root": "src/",
+        "app": "Next.js App Router",
+        "game_core": "Lógica pura (framework-agnostic)",
+        "game": "Implementação Phaser",
+        "components": "React UI",
+        "lib": "Stores Zustand, utilities"
+      },
+      "details": {
+        "src_app": {
+          "description": "Next.js App Router",
+          "subfolders": ["(public)", "(game)/play"]
+        },
+        "src_game_core": {
+          "description": "Lógica pura do jogo",
+          "subfolders": ["types", "systems", "data"]
+        },
+        "src_game": {
+          "description": "Implementação Phaser",
+          "subfolders": ["engine", "scenes", "renderers", "adapters"]
+        },
+        "src_components": {
+          "description": "Componentes React",
+          "subfolders": ["game", "panels", "ui"]
+        },
+        "src_lib": {
+          "description": "Stores e utilities",
+          "subfolders": ["stores", "systems", "utils"]
+        }
+      }
+    },
+    "1_3_phaser_integration": {
+      "title": "1.3 Phaser Integration (SSR)",
+      "description": "Integrar Phaser como client-side component no Next.js",
+      "pesquisa": {
+        "topic": "Phaser 4 WebGPU + Integração Next.js",
+        "webgpu_definition": "Phaser 4 WebGPU é a nova geração do motor de jogos Phaser que utiliza a API WebGPU para rendering gráfico no navegador. WebGPU é a sucessora do WebGL, oferecendo acesso de baixo nível ao hardware gráfico.",
+        "como_usar": {
+          "passos": [
+            "Instalar Phaser via npm",
+            "Configurar game config para usar WebGPU renderer",
+            "Verificar suporte a WebGPU no navegador",
+            "Implementar fallback para WebGL se necessário"
+          ],
+          "codigos": [
+            "// Configuração básica Phaser 4 WebGPU\nimport Phaser from 'phaser';\n\nconst config = {\n  type: Phaser.WEBGPU,\n  width: 1920,\n  height: 1080,\n  backgroundColor: '#1a1a2e',\n  scene: MainScene,\n  scale: {\n    mode: Phaser.Scale.FIT,\n    autoCenter: Phaser.Scale.CENTER_BOTH\n  },\n  render: {\n    antialias: true,\n    powerPreference: 'high-performance',\n    batchSize: 2000\n  }\n};\n\nconst game = new Phaser.Game(config);",
+            "// Componente React com dynamic import\n'use client';\nimport dynamic from 'next/dynamic';\n\nconst GameCanvas = dynamic(\n  () => import('@/components/GameCanvas'),\n  { ssr: false, loading: () => <div>Carregando...</div> }\n);",
+            "// Componente GameCanvas completo\n'use client';\nimport { useEffect, useRef, useState } from 'react';\nimport { PhaserGame } from '@/game/PhaserGame';\n\nexport default function GameCanvas() {\n  const gameRef = useRef<PhaserGame | null>(null);\n  const containerRef = useRef<HTMLDivElement>(null);\n  const [isLoading, setIsLoading] = useState(true);\n\n  useEffect(() => {\n    const initPhaser = async () => {\n      if (!navigator.gpu) console.warn('WebGPU não disponível');\n      const game = new PhaserGame();\n      await game.init('phaser-container');\n      gameRef.current = game;\n      setIsLoading(false);\n    };\n\n    if (typeof window !== 'undefined' && !gameRef.current) initPhaser();\n\n    return () => {\n      gameRef.current?.destroy();\n      gameRef.current = null;\n    };\n  }, []);\n\n  return (\n    <div id='phaser-container' ref={containerRef} className='w-full h-full' />\n  );\n}"
+          ]
+        },
+        "recursos_webgpu": [
+          "Renderer WebGPU nativo",
+          "Compute Shaders para processamento paralelo",
+          "Renderização em múltiplos passes",
+          "Melhor gestão de memória",
+          "Suporte a texturas de alta resolução",
+          "Instanced rendering",
+          "Async pipeline creation"
+        ],
+        "alternativas": [
+          {
+            "nome": "PixiJS",
+            "prós": ["Leve (~60KB)", "Excelente performance 2D", "WebGPU experimental"],
+            "contras": ["Não é game engine completo", "Não tem physics built-in"]
+          },
+          {
+            "nome": "Babylon.js",
+            "prós": ["Game engine 3D completo", "WebGPU muito maduro", "Ferramentas completas"],
+            "contras": ["Paradigma 3D complica 2D", "Bundle maior"]
+          },
+          {
+            "nome": "Three.js",
+            "prós": ["Mais popular WebGL", "Ecossistema vasto"],
+            "contras": ["Não é game engine", "Não otimizado para 2D"]
+          }
+        ],
+        "performance_benchmarks": [
+          { "cenario": "10.000 sprites", "webgl": "45-55 FPS", "webgpu": "58-60 FPS" },
+          { "cenario": "50.000 sprites instanciados", "webgl": "15-20 FPS", "webgpu": "45-55 FPS" }
+        ],
+        "limitacoes": [
+          "Suporte limitado a navegadores (Chrome 113+, Edge 113+, Firefox Nightly)",
+          "Safari ainda sem WebGPU",
+          "Phaser 4 em beta/release candidate"
+        ],
+        "webgpu_vs_webgl": {
+          "diferencas": "WebGPU usa explicit resource binding vs estado implícito do WebGL. WebGPU suporta compute shaders.",
+          "quando_usar_cada": "WebGPU para >5000 sprites ou compute shaders. WebGL para suporte Safari."
+        }
+      },
+      "code_examples": {
+        "game_canvas_component": {
+          "path": "components/game/GameCanvas.tsx",
+          "language": "typescript",
+          "content": "'use client';\n\nimport { useEffect, useRef, useState } from 'react';\nimport Phaser from 'phaser';\n\ninterface GameCanvasProps {\n  onReady?: (game: Phaser.Game) => void;\n}\n\nexport function GameCanvas({ onReady }: GameCanvasProps) {\n  const containerRef = useRef<HTMLDivElement>(null);\n  const gameRef = useRef<Phaser.Game | null>(null);\n\n  useEffect(() => {\n    if (!containerRef.current || gameRef.current) return;\n\n    const config: Phaser.Types.Core.GameConfig = {\n      type: Phaser.WEBGPU,\n      parent: containerRef.current,\n      width: 1920,\n      height: 1080,\n      backgroundColor: '#1a1a2e',\n      scene: [],\n      scale: {\n        mode: Phaser.Scale.FIT,\n        autoCenter: Phaser.Scale.CENTER_BOTH,\n      },\n      render: {\n        antialias: true,\n        pixelArt: false,\n      },\n    };\n\n    gameRef.current = new Phaser.Game(config);\n    \n    if (onReady) {\n      onReady(gameRef.current);\n    }\n\n    return () => {\n      gameRef.current?.destroy(true);\n      gameRef.current = null;\n    };\n  }, [onReady]);\n\n  return <div ref={containerRef} className=\"w-full h-full\" />;\n}"
+        },
+        "dynamic_import": {
+          "path": "app/(game)/play/page.tsx",
+          "language": "typescript",
+          "content": "import dynamic from 'next/dynamic';\n\nconst GameCanvas = dynamic(\n  () => import('@/components/game/GameCanvas').then(mod => mod.GameCanvas),\n  { ssr: false, loading: () => <div>Loading game...</div> }\n);\n\nexport default function PlayPage() {\n  return (\n    <div className=\"h-screen w-screen\">\n      <GameCanvas />\n    </div>\n  );\n}"
+        }
+      }
+    },
+    "1_4_game_loop": {
+      "title": "1.4 Game Loop",
+      "description": "Implementar sistema de tick com fixed timestep",
+      "pesquisa": {
+        "topic": "Game Loop Patterns",
+        "definicao": "O game loop é o coração de qualquer jogo - ciclo contínuo de capturar input, atualizar estado, e renderizar.",
+        "fixed_timestep": {
+          "explicacao": "Game processa lógica em intervalos fixos, independente da taxa de frames. Garante determinismo.",
+          "codigo": "class FixedTimeStepGame {\n  private accumulator = 0;\n  private readonly FIXED_DT = 1/60;\n  private lastTime = 0;\n\n  private gameLoop(timestamp) {\n    const deltaTime = (timestamp - this.lastTime) / 1000;\n    this.lastTime = timestamp;\n\n    this.accumulator = Math.min(this.accumulator + deltaTime, this.FIXED_DT * 3);\n\n    while (this.accumulator >= this.FIXED_DT) {\n      this.fixedUpdate(this.FIXED_DT);\n      this.accumulator -= this.FIXED_DT;\n    }\n\n    const alpha = this.accumulator / this.FIXED_DT;\n    this.render(alpha);\n\n    requestAnimationFrame(this.gameLoop);\n  }\n}",
+          "prós": ["Determinismo", "Física consistente", "Facilita replay"],
+          "contras": ["Maior complexidade", "Requer interpolação"]
+        },
+        "variable_timestep": {
+          "explicacao": "Cada frame usa o delta time real. Simples mas física pode variar.",
+          "codigo": "let lastTime = 0;\n\nfunction loop(timestamp) {\n  const dt = Math.min((timestamp - lastTime) / 1000, 0.1);\n  lastTime = timestamp;\n\n  update(dt);\n  render();\n\n  requestAnimationFrame(loop);\n}",
+          "prós": ["Simples", "Aproveita hardware"],
+          "contras": ["Não determinístico"]
+        },
+        "delta_time": {
+          "explicacao": "Tempo entre frames. Fundamental para movimento independente de FPS.",
+          "tecnicas": [
+            "Clamp de Delta Time (max 0.25s)",
+            "Smoothing com média móvel",
+            "Movimento: position += velocity * dt",
+            "Integração Euler ou Verlet"
+          ]
+        },
+        "pause_resume": [
+          "State machine de pausa",
+          "Pausing the loop",
+          "Time scaling = 0",
+          "Eventos de visibilidade do navegador"
+        ],
+        "controle_velocidade": [
+          "Time Scale Factor",
+          "Fixed update com time scale",
+          "Sistema de layers de tempo",
+          "Fast forward"
+        ],
+        "best_practices": [
+          "Usar performance.now() ou rAF timestamp",
+          "Clamp delta time",
+          "Separar update de render",
+          "Lidar com visibilidade do navegador",
+          "Prevenir spiral of death"
+        ]
+      },
+      "code_examples": {
+        "game_loop_class": {
+          "language": "typescript",
+          "content": "export class GameLoop {\n  private lastTime: number = 0;\n  private accumulator: number = 0;\n  private readonly fixedDt: number = 1 / 60;\n  private frameId?: number;\n  private isPaused: boolean = false;\n  private speed: number = 1.0;\n\n  constructor(\n    private update: (dt: number) => void,\n    private render: (alpha: number) => void\n  ) {}\n\n  start(): void {\n    this.lastTime = performance.now();\n    this.frameId = requestAnimationFrame(this.loop);\n  }\n\n  stop(): void {\n    if (this.frameId) cancelAnimationFrame(this.frameId);\n  }\n\n  pause(): void {\n    this.isPaused = true;\n    this.accumulator = 0;\n  }\n\n  resume(): void {\n    this.isPaused = false;\n    this.lastTime = performance.now();\n  }\n\n  setSpeed(speed: number): void {\n    this.speed = Math.max(0.1, Math.min(4.0, speed));\n    if (speed === 0) this.pause();\n    else if (this.isPaused) this.resume();\n  }\n\n  private loop = (currentTime: number): void => {\n    if (this.isPaused) {\n      this.frameId = requestAnimationFrame(this.loop);\n      return;\n    }\n\n    let frameTime = (currentTime - this.lastTime) / 1000;\n    this.lastTime = currentTime;\n\n    frameTime = Math.min(frameTime, 0.25);\n    frameTime *= this.speed;\n\n    this.accumulator += frameTime;\n\n    while (this.accumulator >= this.fixedDt) {\n      this.update(this.fixedDt);\n      this.accumulator -= this.fixedDt;\n    }\n\n    const alpha = this.accumulator / this.fixedDt;\n    this.render(alpha);\n\n    this.frameId = requestAnimationFrame(this.loop);\n  };\n}"
+        }
+      }
+    },
+    "1_5_tilemap_renderer": {
+      "title": "1.5 Tilemap Renderer",
+      "description": "Renderizar mapa tile-based básico",
+      "pesquisa": {
+        "topic": "Tilemap Rendering",
+        "definicao": "Técnica onde o mundo é construído a partir de tiles repetíveis em uma grade.",
+        "ferramentas": [
+          { "nome": "Tiled", "prós": ["Formato aberto", "Interface intuitiva", "Comunidade ativa"], "formato": "TMX, JSON, CSV" },
+          { "nome": "LDtk", "prós": ["Design moderno", "ECS support", "Level aninhados"], "formato": "JSON" },
+          { "nome": "Godot", "prós": ["Motor completo", "Native tilemap editor"], "formato": "Godot native" }
+        ],
+        "orthogonal_vs_isometric": {
+          "orthogonal": { "prós": ["Simples", "Intuitivo", "Melhor para RTS"], "contras": ["Visual menos interessante"] },
+          "isometric": { "prós": ["Visual 3D-like", "Excelente para estratégia"], "contras": ["Complexidade maior"] }
+        },
+        "large_map": {
+          "tecnicas": [
+            "Chunking (dividir em chunks menores)",
+            "Culling (não renderizar fora da câmera)",
+            "Spatial Hashing",
+            "Streaming de tileset",
+            "LOD (Level of Detail)",
+            "Infinite Map procedural"
+          ]
+        },
+        "layers": {
+          "tipos": [
+            { "nome": "Terrain", "descricao": "Camada base (grama, água, floresta)" },
+            { "nome": "Roads", "descricao": "Estradas e caminhos" },
+            { "nome": "Features", "descricao": "Árvores, rochas, recursos" },
+            { "nome": "Buildings", "descricao": "Construções do jogador" },
+            { "nome": "Overlay", "descricao": "Highlights e seleção" }
+          ]
+        },
+        "performance": {
+          "tecnicas": [
+            "Texture Atlas",
+            "Tilemap Culling Automático",
+            "Object Pooling",
+            "Spatial Partitioning",
+            "Static Layer Baking",
+            "WebGL Acceleration"
+          ]
+        }
+      },
+      "code_examples": {
+        "tilemap_renderer": {
+          "language": "typescript",
+          "content": "import Phaser from 'phaser';\n\nexport interface MapData {\n  width: number;\n  height: number;\n  tiles: number[];\n  terrain: number[][];\n}\n\nexport class TilemapRenderer {\n  private scene: Phaser.Scene;\n  private tilemap!: Phaser.Tilemaps.Tilemap;\n  private layers: Phaser.Tilemaps.TilemapLayer[] = [];\n\n  constructor(scene: Phaser.Scene) {\n    this.scene = scene;\n  }\n\n  createFromData(mapData: MapData): void {\n    this.tilemap = this.scene.make.tilemap({\n      tileWidth: 32,\n      tileHeight: 32,\n      width: mapData.width,\n      height: mapData.height,\n    });\n\n    const tileset = this.tilemap.addTilesetImage(\n      'world_tiles',\n      undefined,\n      32, 32,\n      0, 0\n    );\n\n    const layer = this.tilemap.createBlankLayer('base', tileset);\n\n    for (let y = 0; y < mapData.height; y++) {\n      for (let x = 0; x < mapData.width; x++) {\n        const tileId = mapData.tiles[y * mapData.width + x];\n        if (tileId > 0) {\n          layer.putTileAt(tileId - 1, x, y);\n        }\n      }\n    }\n\n    this.layers.push(layer);\n  }\n\n  getTileAt(x: number, y: number): Phaser.Tilemaps.Tile | null {\n    return this.tilemap.getTileAt(x, y, false, 'base');\n  }\n\n  setTile(tileId: number, x: number, y: number): void {\n    this.layers[0]?.putTileAt(tileId - 1, x, y);\n  }\n}"
+        }
+      }
+    },
+    "1_6_camera_controls": {
+      "title": "1.6 Camera Controls",
+      "description": "Pan, zoom e limites do mapa",
+      "pesquisa": {
+        "topic": "Camera Controls",
+        "definicao": "Sistema que controla a visualização do mundo do jogo.",
+        "pan": {
+          "implementacao": "WASD/Arrow Keys, Mouse Drag, Edge Panning",
+          "codigo": "class CameraController extends Phaser.Scene {\n  private camera: Phaser.Cameras.SceneCamera;\n  private panSpeed = 500;\n\n  update(time: number, delta: number) {\n    const speed = this.panSpeed * (delta / 1000);\n    if (this.keys.left.isDown) this.camera.scrollX -= speed;\n    if (this.keys.right.isDown) this.camera.scrollX += speed;\n  }\n}",
+          "atalhos": ["W/Arrow Up", "A/Arrow Left", "S/Arrow Down", "D/Arrow Right", "Home", "Space"]
+        },
+        "zoom": {
+          "implementacao": "Scroll Wheel, Keyboard (+/-), Zoom to point",
+          "limites": { "min": 0.5, "max": 3.0, "step": 0.1 }
+        },
+        "rotacao": {
+          "implementacao": "Q/E keys, continuous with mouse"
+        },
+        "limites": {
+          "explicacao": "Boundary constraints evitando áreas fora do mundo",
+          "codigo": "this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);"
+        },
+        "movimento_smooth": {
+          "tecnicas": [
+            "Lerp (Linear Interpolation)",
+            "Smooth Step",
+            "Spring Physics",
+            "Momentum/Inertia"
+          ]
+        },
+        "best_practices": [
+          "Sempre usar interpolação",
+          "Separar input de atualização",
+          "Unified input system",
+          "Configurabilidade",
+          "Culling para performance"
+        ]
+      },
+      "code_examples": {
+        "camera_controller": {
+          "language": "typescript",
+          "content": "export class CameraController {\n  private camera: Phaser.Cameras.Scene2D.Camera;\n  private isDragging: boolean = false;\n  private dragStartX: number = 0;\n  private dragStartY: number = 0;\n  private cameraStartX: number = 0;\n  private cameraStartY: number = 0;\n  private minZoom: number = 0.25;\n  private maxZoom: number = 3.0;\n\n  constructor(camera: Phaser.Cameras.Scene2D.Camera, scene: Phaser.Scene) {\n    this.camera = camera;\n\n    scene.input.on('pointerdown', this.onPointerDown, this);\n    scene.input.on('pointermove', this.onPointerMove, this);\n    scene.input.on('pointerup', this.onPointerUp, this);\n    scene.input.on('pointerupoutside', this.onPointerUp, this);\n    scene.input.on('wheel', this.onWheel, this);\n  }\n\n  private onPointerDown(pointer: Phaser.Input.Pointer): void {\n    if (pointer.leftButtonDown()) {\n      this.isDragging = true;\n      this.dragStartX = pointer.x;\n      this.dragStartY = pointer.y;\n      this.cameraStartX = this.camera.scrollX;\n      this.cameraStartY = this.camera.scrollY;\n    }\n  }\n\n  private onPointerMove(pointer: Phaser.Input.Pointer): void {\n    if (this.isDragging) {\n      const deltaX = (this.dragStartX - pointer.x) / this.camera.zoom;\n      const deltaY = (this.dragStartY - pointer.y) / this.camera.zoom;\n      this.camera.scrollX = this.cameraStartX + deltaX;\n      this.camera.scrollY = this.cameraStartY + deltaY;\n    }\n  }\n\n  private onPointerUp(): void {\n    this.isDragging = false;\n  }\n\n  private onWheel(\n    pointer: Phaser.Input.Pointer,\n    _gameObjects: Phaser.GameObjects.GameObject[],\n    _deltaX: number,\n    deltaY: number\n  ): void {\n    const worldPoint = this.camera.getWorldPoint(pointer.x, pointer.y);\n    const zoomFactor = 0.001 * deltaY;\n    const newZoom = this.camera.zoom - this.camera.zoom * zoomFactor;\n    this.camera.zoom = Phaser.Math.Clamp(newZoom, this.minZoom, this.maxZoom);\n    const newWorldPoint = this.camera.getWorldPoint(pointer.x, pointer.y);\n    this.camera.scrollX += worldPoint.x - newWorldPoint.x;\n    this.camera.scrollY += worldPoint.y - newWorldPoint.y;\n  }\n}"
+        }
+      }
+    },
+    "1_7_zustand_store": {
+      "title": "1.7 Zustand Store",
+      "description": "Criar store Zustand para estado global do jogo",
+      "pesquisa": {
+        "topic": "Zustand State Management",
+        "definicao": "Biblioteca minimalista de state management para React. 1.1KB gzipped, API baseada em hooks.",
+        "como_usar": {
+          "passos": [
+            "Instalar via npm",
+            "Criar store com create()",
+            "Usar hook em componentes",
+            "Selecionar estado específico"
+          ],
+          "codigos": [
+            "// Store básico\nimport { create } from 'zustand';\n\ninterface GameState {\n  count: number;\n  increment: () => void;\n}\n\nconst useGameStore = create<GameState>((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n}))",
+            "// Uso\nconst count = useGameStore((s) => s.count);"
+          ]
+        },
+        "middleware": [
+          { "nome": "persist", "uso": "localStorage/sessionStorage" },
+          { "nome": "devtools", "uso": "Redux DevTools" },
+          { "nome": "subscribeWithSelector", "uso": "Subscription fora de React" },
+          { "nome": "immer", "uso": "Mutações declarativas" }
+        ],
+        "padroes_jogo": [
+          "Time/Turno phases",
+          "Treasury/Recursos",
+          "Selection de unidades",
+          "Undo/Redo (zundo)",
+          "Optimistic Updates"
+        ],
+        "integracao_phaser": [
+          "EventBus Bridge",
+          "Zustand como Ponte",
+          "Phaser hooks (alternativa)"
+        ],
+        "performance": [
+          "Selectors específicos",
+          "useShallow para múltiplas props",
+          "Transient updates",
+          "Batched updates"
+        ]
+      },
+      "code_examples": {
+        "game_store": {
+          "language": "typescript",
+          "content": "import { create } from 'zustand';\nimport { persist, createJSONStorage } from 'zustand/middleware';\n\ninterface TimeState {\n  day: number;\n  month: number;\n  year: number;\n}\n\ninterface GameState {\n  time: TimeState;\n  playerCountry: string | null;\n  treasury: number;\n  isPaused: boolean;\n  gameSpeed: number;\n  advanceTime: (days: number) => void;\n  setPaused: (paused: boolean) => void;\n  setGameSpeed: (speed: number) => void;\n  setPlayerCountry: (countryId: string) => void;\n  modifyTreasury: (amount: number) => void;\n}\n\nexport const useGameStore = create<GameState>()(\n  persist(\n    (set) => ({\n      time: { day: 1, month: 1, year: 1836 },\n      playerCountry: null,\n      treasury: 1000,\n      isPaused: true,\n      gameSpeed: 0,\n\n      advanceTime: (days) => set((state) => {\n        let newDay = state.time.day + days;\n        let newMonth = state.time.month;\n        let newYear = state.time.year;\n\n        while (newDay > 30) {\n          newDay -= 30;\n          newMonth++;\n          if (newMonth > 12) {\n            newMonth = 1;\n            newYear++;\n          }\n        }\n\n        return { time: { day: newDay, month: newMonth, year: newYear } };\n      }),\n\n      setPaused: (paused) => set({ isPaused: paused }),\n      setGameSpeed: (speed) => set({ \n        gameSpeed: speed, \n        isPaused: speed === 0 \n      }),\n      setPlayerCountry: (id) => set({ playerCountry: id }),\n      modifyTreasury: (amount) => set((state) => ({\n        treasury: Math.max(0, state.treasury + amount)\n      })),\n    }),\n    {\n      name: 'game-save',\n      storage: createJSONStorage(() => localStorage),\n      partialize: (state) => ({\n        time: state.time,\n        playerCountry: state.playerCountry,\n        treasury: state.treasury,\n      }),\n    }\n  )\n);"
+        },
+        "event_bus": {
+          "language": "typescript",
+          "content": "type GameEvent = \n  | { type: 'TIME_ADVANCE'; payload: { days: number } }\n  | { type: 'BUILDING_CREATED'; payload: { id: string; type: string } }\n  | { type: 'STATE_SELECTED'; payload: { stateId: string } };\n\nclass EventBus {\n  private listeners: Map<string, Set<(data: any) => void>> = new Map();\n\n\n  on(event: string, callback: (data: any) => void): void {\n    if (!this.listeners.has(event)) {\n      this.listeners.set(event, new Set());\n    }\n    this.listeners.get(event)!.add(callback);\n  }\n\n  off(event: string, callback: (data: any) => void): void {\n    this.listeners.get(event)?.delete(callback);\n  }\n\n  emit(event: string, data?: any): void {\n    this.listeners.get(event)?.forEach(cb => cb(data));\n  }\n}\n\nexport const GameEventBus = new EventBus();"
+        }
+      }
+    }
+  },
+  "checklist": [
+    "Setup Next.js + TypeScript + Tailwind",
+    "Pasta three-layer",
+    "Phaser integração SSR disabled",
+    "Game loop (fixed timestep)",
+    "Tilemap renderer",
+    "Camera pan/zoom/bounds",
+    "Zustand store"
+  ],
+  "deliverable": "Mapa 2D interativo com pan/zoom"
+}

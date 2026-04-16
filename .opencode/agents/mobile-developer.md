@@ -11,7 +11,6 @@ permission:
   glob: allow
   question: allow
   task: allow
-  "*": deny
 ---
 
 # Mobile Developer

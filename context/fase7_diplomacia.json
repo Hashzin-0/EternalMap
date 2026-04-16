@@ -1,0 +1,238 @@
+{
+  "version": "2.0.0",
+  "title": "Phase 7: DIPLOMACY - Complete Research with Web Sources",
+  "description": "Weeks 31-36 - Diplomacy and wars. Research compiled from web sources with detailed implementation.",
+  "metadata": {
+    "research_date": "2026-04-16",
+    "web_sources": [
+      "Victoria 3 Wiki - Diplomatic Play",
+      "Victoria 3 Wiki - Diplomacy",
+      "Victoria 3 Wiki - Warfare Overview",
+      "Victoria 3 Dev Diary #18 - Rank & Prestige",
+      "SegmentNext - Diplomatic Plays",
+      "The Gamer - Wars Guide"
+    ],
+    "topics_covered": [
+      "Diplomatic Relations",
+      "Diplomatic Plays",
+      "War System",
+      "Peace Treaties",
+      "Subjects",
+      "Prestige/Rank"
+    ]
+  },
+
+  "7_1_diplomatic_relations": {
+    "title": "7.1 Diplomatic Relations and Attitudes",
+    "research": {
+      "web_definition": {
+        "what_is": "Diplomacy involves relationships between countries. Key factors: attitude, relations score, infamy, interests.",
+        "what_exists": "Relations: -100 to +100. Attitudes: Hostile, Unfriendly, Neutral, Friendly, Cordial, Allied.",
+        "how_to_use": "Improve relations via diplomatic actions. Attitudes affect AI acceptance of proposals.",
+        "how_to_integrate": "Relations change from events, wars, trade. Attitudes calculated from relation score.",
+        "how_to_expand": "Add new diplomatic actions, modify attitude thresholds."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Diplomacy"
+      ]
+    },
+    "attitude_thresholds": {
+      "allied": "relation >= 80",
+      "cordial": "relation >= 40",
+      "friendly": "relation >= 10",
+      "neutral": "-10 to 10",
+      "unfriendly": "-40 to -10",
+      "hostile": "below -40"
+    }
+  },
+
+  "7_2_diplomatic_plays": {
+    "title": "7.2 Diplomatic Plays",
+    "research": {
+      "web_definition": {
+        "what_is": "Formal demands that can escalate to war. All wars in Victoria 3 start through diplomatic plays.",
+        "what_exists": "Three phases: Opening Moves (20%), Diplomatic Maneuvering (60%), Countdown to War (20%).",
+        "how_to_use": "Select war goal → add demands → initiate. Countries can join or be swayed. Backing down avoids war.",
+        "how_to_integrate": "Maneuvers: ability to sway nations. Infamy: aggression cost. Interests: regional involvement requirement.",
+        "how_to_expand": "Add new war goals, diplomatic play types."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Diplomatic_play"
+      ]
+    },
+    "phases": {
+      "opening_moves": {
+        "percentage": "0-20%",
+        "actions": "Initial demands, can add primary war goal"
+      },
+      "diplomatic_maneuvering": {
+        "percentage": "20-80%",
+        "actions": "Sway nations, add secondary demands, mobilization"
+      },
+      "countdown_to_war": {
+        "percentage": "80-100%",
+        "actions": "Lock in, no changes, war begins at 100%"
+      }
+    },
+    "war_goals": {
+      "annex": "Add state to country",
+      "make_subject": "Vassalize/dominionize",
+      "liberate": "Release as independent",
+      "regime_change": "Force government type change",
+      "humiliate": "Reduce prestige, block plays",
+      "open_market": "Force free trade",
+      "cut_down_to_size": "Revert conquests"
+    },
+    "maneuver_resources": {
+      "great_power": 100,
+      "major_power": 75,
+      "minor_power": 60,
+      "insignificant": 50
+    }
+  },
+
+  "7_3_war_system": {
+    "title": "7.3 War System",
+    "research": {
+      "web_definition": {
+        "what_is": "War continues from diplomatic play. Uses fronts, mobilization, and surrender progress.",
+        "what_exists": "Wars have fronts at borders. Units engage in battles. Surrender progress determines victory.",
+        "how_to_use": "Deploy armies to fronts. Mobilize for more battalions. War support affects negotiation.",
+        "how_to_integrate": "War exhaustion from battles. Occupation of states affects surrender progress.",
+        "how_to_expand": "Add unit types, new military mechanics."
+      },
+      "sources": [
+        "https://vic3.paradoxwikis.com/Warfare_overview"
+      ]
+    },
+    "war_mechanics": {
+      "fronts": "Created at borders between allied/enemy territory",
+      "battles": "Resolve at front location",
+      "occupation": "Control states to gain surrender progress",
+      "mobilization": "Additional battalions for war duration",
+      "war_support": "Starts at 100, affects peace negotiation"
+    },
+    "peace_negotiation": {
+      "trigger": "Surrender progress reaches threshold",
+      "negotiation": "Winner can demand terms",
+      "white_peace": "No gains/losses"
+    }
+  },
+
+  "7_4_peace_treaties": {
+    "title": "7.4 Peace Treaties",
+    "research": {
+      "web_definition": {
+        "what_is": "Terms after war ends based on surrender progress and war goals.",
+        "what_exists": "Primary goals (enforced on surrender), secondary goals (negotiated).",
+        "how_to_use": "War leader selects goals from available options. Some goals require meeting surrender threshold.",
+        "how_to_integrate": "War goals define available treaty terms. Infamy affects costs.",
+        "how_to_expand": "Add new treaty types."
+      }
+    }
+  },
+
+  "7_5_subjects": {
+    "title": "7.5 Subject Nations",
+    "research": {
+      "web_definition": {
+        "what_is": "Hierarchical relationships between countries. Subject follows overlord's policies.",
+        "what_exists": "Types: Vassal, Puppet, Dominion, Protectorate, Client State.",
+        "how_to_use": "Subjects pay taxes, provide military support. Can have limited diplomacy.",
+        "how_to_integrate": "Integrate for full control. Independence movements possible.",
+        "how_to_expand": "Add new subject types with unique mechanics."
+      },
+      "subject_types": {
+        "vassal": "Tax obligations, limited diplomacy",
+        "puppet": "Controlled by overlord",
+        "dominion": "Self-governing but aligned",
+        "client_state": "Protected buffer"
+      }
+    }
+  },
+
+  "7_6_prestige_rank": {
+    "title": "7.6 Prestige and Rank",
+    "research": {
+      "web_definition": {
+        "what_is": "Prestige determines international standing. Rank based on prestige with thresholds.",
+        "what_exists": "Six ranks: Great Power, Major Power, Minor Power, Regional Power, Insignificant Power, Unrecognized.",
+        "how_to_use": "Higher rank = more interests, maneuvers, influence capacity. Prestige gained from military, economy, events.",
+        "how_to_integrate": "Rank affects diplomatic options. Prestige thresholds: 5× global average for Great Power.",
+        "how_to_expand": "Add rank tiers, prestige sources."
+      },
+      "sources": [
+        "https://forum.paradoxplaza.com/forum/developer-diary/victoria-3-dev-diary-18-rank-prestige.1493822/"
+      ]
+    },
+    "rank_benefits": {
+      "great_power": {
+        "interests": 6,
+        "maneuver_cap": 100,
+        "influence": "Highest"
+      },
+      "major_power": {
+        "interests": 3,
+        "maneuver_cap": 75
+      },
+      "minor_power": {
+        "interests": 1,
+        "maneuver_cap": 60
+      }
+    },
+    "prestige_sources": {
+      "military": "Wars, occupations, victories",
+      "economic": "GDP, trade, buildings",
+      "diplomatic": "Treaties, subjects",
+      "events": "Historical events"
+    }
+  },
+
+  "7_7_infamy": {
+    "title": "7.7 Infamy System",
+    "research": {
+      "web_definition": {
+        "what_is": "Infamy represents perceived aggression. 0-1000 scale. Higher = more negative diplomatic consequences.",
+        "what_exists": "Four levels: Established (0-25), Disreputable (25-50), Notorious (50-100), Pariah (100+).",
+        "how_to_use": "Aggressive war goals generate infamy. High infamy blocks diplomatic plays by others.",
+        "how_to_integrate": "Infamy calculated: Base × (1 + Pop multiplier) × State multiplier × Rank modifiers.",
+        "how_to_expand": "Add infamy modifiers, reduce mechanisms."
+      },
+      "infamy_effects": {
+        "established": "No penalty",
+        "disreputable": "+25% diplo cost",
+        "notorious": "+50% diplo cost",
+        "pariah": "+100%, can be attacked freely"
+      }
+    }
+  },
+
+  "checklist": [
+    "Relations (-100 to +100)",
+    "Diplomatic Plays (3 phases)",
+    "War System (fronts, occupation)",
+    "Peace Treaties",
+    "Subjects (Vassal, Dominion, etc.)",
+    "Prestige/Rank (6 tiers)",
+    "Infamy (0-1000)"
+  ],
+  "deliverable": "Diplomacy and wars system",
+  "references": [
+    {
+      "title": "Victoria 3 Wiki - Diplomatic Play",
+      "url": "https://vic3.paradoxwikis.com/Diplomatic_play"
+    },
+    {
+      "title": "Victoria 3 Wiki - Diplomacy",
+      "url": "https://vic3.paradoxwikis.com/Diplomacy"
+    },
+    {
+      "title": "Victoria 3 Wiki - Warfare Overview",
+      "url": "https://vic3.paradoxwikis.com/Warfare_overview"
+    },
+    {
+      "title": "Diplomatic Plays Guide - SegmentNext",
+      "url": "https://segmentnext.com/victoria-3-diplomatic-plays/"
+    }
+  ]
+}
