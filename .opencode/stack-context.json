@@ -1,0 +1,112 @@
+{
+  "generated_at": "2026-04-13T04:19:00Z",
+  "project": "EternalMap",
+  "framework_runtime": {
+    "nextjs": "16.2.3",
+    "react": "19.2.4",
+    "typescript": "5",
+    "nodejs": "implied by Next.js"
+  },
+  "dependencies": {
+    "production": {
+      "next": "16.2.3",
+      "react": "19.2.4",
+      "react-dom": "19.2.4",
+      "phaser": "^4.0.0",
+      "zustand": "^5.0.12"
+    },
+    "development": {
+      "typescript": "^5",
+      "@types/react": "^19",
+      "@types/react-dom": "^19",
+      "@types/node": "^20",
+      "tailwindcss": "^4",
+      "@tailwindcss/postcss": "^4",
+      "eslint": "^9",
+      "eslint-config-next": "16.2.3"
+    }
+  },
+  "typescript_config": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "strict": true,
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "build_css_config": {
+    "tailwind_version": "4",
+    "tailwind_config": "CSS-only (@import tailwindcss)",
+    "postcss_plugin": "@tailwindcss/postcss"
+  },
+  "folder_structure": {
+    "src/app": "Next.js App Router",
+    "src/components/game": "Game React components",
+    "src/game": "Phaser game engine code",
+    "src/game/engine": "Game engine initialization",
+    "src/game/scenes": "Phaser scenes",
+    "src/game/renderers": "Renderers",
+    "src/game/camera": "Camera controllers",
+    "src/game-core": "Core game types and state",
+    "src/game-core/state": "Initial state",
+    "src/game-core/types": "TypeScript type definitions",
+    "src/lib": "Library utilities",
+    "src/lib/stores": "Zustand stores",
+    "src/lib/utils": "Utility functions"
+  },
+  "architecture_patterns": {
+    "zustand_store": {
+      "pattern": "Zustand store with transient updates",
+      "file": "src/lib/stores/game-store.ts",
+      "features": ["time", "treasury", "paused", "speed", "camera position", "zoom", "tile selection"]
+    },
+    "phaser_react_integration": {
+      "pattern": "Phaser game embedded in React component",
+      "files": ["src/components/game/GameCanvas.tsx", "src/game/engine/game-engine.ts"],
+      "physics": "Arcade physics with no gravity"
+    },
+    "nextjs_app_router": {
+      "pattern": "Route groups src/app/(game)/",
+      "dynamic_routes": "/play"
+    },
+    "typescript_strict": {
+      "pattern": "Full strict type checking"
+    },
+    "tailwind_css_4": {
+      "pattern": "CSS-only configuration"
+    }
+  },
+  "npm_scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "key_files": {
+    "game_state": "src/lib/stores/game-store.ts",
+    "game_types": "src/game-core/types/game-state.ts",
+    "game_engine": "src/game/engine/game-engine.ts",
+    "main_scene": "src/game/scenes/MainScene.ts",
+    "tilemap_renderer": "src/game/renderers/TilemapRenderer.ts",
+    "game_canvas": "src/components/game/GameCanvas.tsx",
+    "game_hud": "src/components/game/GameHUD.tsx",
+    "play_page": "src/app/(game)/play/page.tsx"
+  },
+  "technology_summary": {
+    "framework": "Next.js 16.2.3 (App Router)",
+    "ui_library": "React 19.2.4",
+    "language": "TypeScript 5 (Strict)",
+    "game_engine": "Phaser 4.0.0",
+    "state_management": "Zustand 5.0.12",
+    "styling": "Tailwind CSS 4 + PostCSS",
+    "linting": "ESLint 9 (flat config)",
+    "build_tool": "Next.js built-in (webpack)"
+  },
+  "detection_metadata": {
+    "date": "Mon Apr 13 2026",
+    "detector": "stack-detector",
+    "version": "1.0.0"
+  }
+}

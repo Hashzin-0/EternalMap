@@ -38,9 +38,7 @@ yarn-error.log*
 coverage/
 
 # context (research files)
-context/
 AGENTS.md
 PLANO_COMPLETO.md
 
 # opencode
-.opencode/

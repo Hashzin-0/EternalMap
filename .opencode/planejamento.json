@@ -1,0 +1,217 @@
+{
+  "timestamp": "2026-04-13T04:00:00Z",
+  "project": "EternalMap",
+  "description": "Victoria 3 style strategy game - Web Development",
+  "technology_stack": {
+    "framework": "Next.js 14 + TypeScript",
+    "game_engine": "Phaser 4 (WebGPU)",
+    "state_management": "Zustand",
+    "ui_framework": "React + Tailwind CSS",
+    "save_system": "IndexedDB",
+    "build_tool": "Vite"
+  },
+  "total_schedule": "~52 Weeks (1 Year)",
+  "phases": [
+    {
+      "phase": 1,
+      "name": "BASE",
+      "weeks": "1-4",
+      "deliverable": "Interactive 2D map with pan/zoom",
+      "tasks": [
+        "Setup Next.js + TypeScript + Tailwind",
+        "Three-layer folder structure (game-core, game, components)",
+        "Phaser SSR integration",
+        "Game Loop (fixed timestep)",
+        "Tilemap Renderer",
+        "Camera Controls (pan, zoom)",
+        "Zustand Store"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "WORLD DATA",
+      "weeks": "5-8",
+      "deliverable": "Playable world with states and geographic data",
+      "tasks": [
+        "Map Data Structures (States, Regions, Provinces)",
+        "Terrain Types (enum, properties)",
+        "Resources System (placement, discovery)",
+        "Countries Data (definitions, factory)",
+        "Province/State Grid",
+        "World Generation"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "ECONOMY",
+      "weeks": "9-14",
+      "deliverable": "Functional economy",
+      "tasks": [
+        "Goods System (categories, definitions)",
+        "Building Types (categories, requirements)",
+        "Building Construction (queue, costs)",
+        "Production Methods (inputs/outputs)",
+        "GDP Calculation",
+        "Treasury (taxes, revenues)",
+        "Trade Routes (export/import)",
+        "Market Prices (dynamic)"
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "POPULATION",
+      "weeks": "15-20",
+      "deliverable": "Pops living in the world",
+      "tasks": [
+        "Pop Types (15 professions)",
+        "Pop Needs (Life, Household, Consumer)",
+        "Standard of Living (calculation, effects)",
+        "Pop Employment (hiring, qualifications)",
+        "Pop Migration (push/pull factors)",
+        "Pop Growth (birth/death rates)",
+        "Pop Stratification (Rich/Middle/Poor)",
+        "Culture/Religion"
+      ]
+    },
+    {
+      "phase": 5,
+      "name": "POLITICS",
+      "weeks": "21-26",
+      "deliverable": "Playable political system",
+      "tasks": [
+        "Government Types (7 types)",
+        "Laws System (24 law groups)",
+        "Interest Groups (8 IGs)",
+        "Political Influence/Clout",
+        "Law Enactment (checkpoints)",
+        "Legitimacy",
+        "Ideologies",
+        "Elections"
+      ]
+    },
+    {
+      "phase": 6,
+      "name": "TECHNOLOGY",
+      "weeks": "27-30",
+      "deliverable": "Functional technological research",
+      "tasks": [
+        "Tech Tree (3 trees, 5 eras)",
+        "Innovation Points (base 50 + universities)",
+        "Tech Unlocking (buildings, methods, laws)",
+        "Tech Spread (passive)"
+      ]
+    },
+    {
+      "phase": 7,
+      "name": "DIPLOMACY",
+      "weeks": "31-36",
+      "deliverable": "Diplomacy and wars",
+      "tasks": [
+        "Relations (-100 to +100)",
+        "Diplomatic Actions",
+        "Diplomatic Plays (3 phases)",
+        "War System (fronts, occupation)",
+        "Peace Treaties",
+        "Subjects (Puppet, Vassal, Dominion)",
+        "Prestige/Rank"
+      ]
+    },
+    {
+      "phase": 8,
+      "name": "UI/UX",
+      "weeks": "37-44",
+      "deliverable": "Complete Victoria 3 UI",
+      "tasks": [
+        "Map UI (tooltips, map modes)",
+        "Top Bar (data, speed, treasury)",
+        "Side Panel (state selection)",
+        "Economy Panel",
+        "Population Panel",
+        "Politics Panel",
+        "Technology Panel",
+        "Diplomacy Panel",
+        "Menus (pause, settings, save/load)"
+      ]
+    },
+    {
+      "phase": 9,
+      "name": "SAVE/LOAD",
+      "weeks": "45-48",
+      "deliverable": "Complete save system",
+      "tasks": [
+        "Serialization (JSON/Protobuf)",
+        "IndexedDB storage",
+        "Multiple Save Slots",
+        "Auto-save",
+        "Version Migration"
+      ]
+    },
+    {
+      "phase": 10,
+      "name": "OPTIMIZATION",
+      "weeks": "49-52",
+      "deliverable": "Stable release",
+      "tasks": [
+        "WebGL Performance (batching, culling)",
+        "Memory Management (object pooling)",
+        "Mobile Optimization",
+        "Bug Fixes",
+        "Game Balance",
+        "Visual Polish"
+      ]
+    }
+  ],
+  "research_files": [
+    {"filename": "pesquisa_victoria3.md", "description": "Complete Victoria 3 research"},
+    {"filename": "pesquisa_techstack.md", "description": "Recommended tech stack"},
+    {"filename": "fase1_base.md", "description": "Phase 1 - BASE"},
+    {"filename": "fase2_dados_mundo.md", "description": "Phase 2 - World Data"},
+    {"filename": "fase3_economia.md", "description": "Phase 3 - Economy"},
+    {"filename": "fase4_populacao.md", "description": "Phase 4 - Population"},
+    {"filename": "fase5_politica.md", "description": "Phase 5 - Politics"},
+    {"filename": "fase6_tecnologia.md", "description": "Phase 6 - Technology"},
+    {"filename": "fase7_diplomacia.md", "description": "Phase 7 - Diplomacy"},
+    {"filename": "fase8_ui_ux.md", "description": "Phase 8 - UI/UX"},
+    {"filename": "fase9_save_load.md", "description": "Phase 9 - Save/Load"},
+    {"filename": "fase10_otimizacao.md", "description": "Phase 10 - Optimization"}
+  ],
+  "folder_structure": {
+    "src/app": "Next.js App Router",
+    "src/app/(public)": "Public routes",
+    "src/app/(game)/play": "Game play route",
+    "src/game-core": "Pure logic (framework-agnostic)",
+    "src/game-core/types": "TypeScript interfaces",
+    "src/game-core/systems": "Game mechanics",
+    "src/game-core/data": "Game data (JSON)",
+    "src/game": "Phaser implementation",
+    "src/game/engine": "Game engine",
+    "src/game/scenes": "Phaser scenes",
+    "src/game/renderers": "Renderers",
+    "src/game/adapters": "Adapters",
+    "src/components/game": "Game UI components",
+    "src/components/panels": "Side panels",
+    "src/components/ui": "Reusable UI",
+    "src/lib/stores": "Zustand stores",
+    "src/lib/systems": "Core systems",
+    "src/lib/utils": "Utilities",
+    "src/types": "TypeScript types"
+  },
+  "next_steps": [
+    "Start implementation - Begin with Phase 1 (BASE)",
+    "Create Git repository - Project version control",
+    "Setup CI/CD - Automatic build and deploy",
+    "Automated tests - Unit tests for game-core"
+  ],
+  "final_considerations": [
+    "Project is ambitious but viable with incremental development",
+    "Each phase can be developed and tested independently",
+    "Modern stack (Next.js + Phaser) is suitable for mobile web",
+    "Economy and population are the heart of Victoria 3 - focus on them first",
+    "UI can be iterative - start simple and expand"
+  ],
+  "status": {
+    "current_phase": 1,
+    "phase_1_completed": true,
+    "all_phases": 10
+  }
+}
