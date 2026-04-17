@@ -2,11 +2,13 @@ import * as Phaser from 'phaser'
 import { MapData, TileData, TerrainType } from '../../game-core/types/world'
 import { TilemapRenderer } from '../renderers/TilemapRenderer'
 import { CameraController } from '../camera/CameraController'
+import { GameManager, createGameManager } from '../GameManager'
 
 export class MainScene extends Phaser.Scene {
   private mapData!: MapData
   private tilemapRenderer!: TilemapRenderer
   private cameraController!: CameraController
+  private gameManager!: GameManager
 
   constructor() {
     super({ key: 'MainScene' })
@@ -23,6 +25,13 @@ export class MainScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor('#1a1a2e')
+
+    // Initialize game manager
+    this.gameManager = createGameManager()
+    this.gameManager.setEventEmitter(this.game.events)
+    
+    // Initialize game state
+    this.gameManager.initialize(1836, 10000, 100000)
 
     this.tilemapRenderer = new TilemapRenderer(this, this.mapData)
     this.tilemapRenderer.create()
@@ -57,6 +66,10 @@ export class MainScene extends Phaser.Scene {
       }
     })
 
+    // Listen for game events from GameManager
+    this.game.events.on('gameTick', this.handleGameTick, this)
+    this.game.events.on('yearChanged', this.handleYearChanged, this)
+
     this.game.events.emit('sceneReady', true)
   }
 
@@ -68,6 +81,22 @@ export class MainScene extends Phaser.Scene {
     if (tileX >= 0 && tileX < this.mapData.width && tileY >= 0 && tileY < this.mapData.height) {
       this.game.events.emit('tileClicked', { x: tileX, y: tileY })
     }
+  }
+
+  private handleGameTick(data: {
+    year: number
+    month: number
+    treasury: number
+    population: number
+    legitimacy: number
+    prestige: number
+  }): void {
+    // Emit to UI store
+    this.game.events.emit('uiUpdate', data)
+  }
+
+  private handleYearChanged(data: { year: number }): void {
+    console.log(`Year changed to ${data.year}`)
   }
 
   private generateDefaultMap(): MapData {
@@ -96,8 +125,14 @@ export class MainScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    // Update camera
     if (this.cameraController) {
       this.cameraController.update(delta)
+    }
+    
+    // Update game systems
+    if (this.gameManager) {
+      this.gameManager.update(delta)
     }
   }
 }
