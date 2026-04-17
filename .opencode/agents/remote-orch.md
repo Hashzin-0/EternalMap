@@ -598,7 +598,122 @@ For detailed protocols, see:
 
 ---
 
-## 🔍 Discovery Protocol v2
+## 🔍 Discovery Protocol v2 (Multi-Layer)
+
+Execute automaticamente em BACKGROUND antes de delegar qualquer tarefa. O usuário não vê este processo - é silencioso e automático.
+
+### Camada 1: Local Discovery (P1)
+
+**Executar automaticamente antes de tudo:**
+
+```
+1. Use glob para buscar em .opencode/skills/
+   - Padrão: .opencode/skills/**/SKILL.md
+   - Extrai: name, description, triggers de cada skill
+
+2. Use glob para buscar em .opencode/agents/
+   - Padrão: .opencode/agents/*.md
+   - Extrai: name, description, triggers de cada agent
+
+3. Se encontrou localmente → USA可以直接
+   - Skip para camadas 2, 3, 4
+```
+
+**Cache Local (em memória):**
+```
+- Mantém registry dinâmico das skills/agents locais
+- TTL: 1 hora ( igual stack-detector)
+- Update quando novas skills são adicionadas
+```
+
+### Camada 2: Remote GitHub Fetch (P2)
+
+**Se Camada 1 falhou (não encontrou localmente):**
+
+```
+1. Fetch do GitHub (usando webfetch):
+   - Skills: https://api.github.com/repos/Hashzin-0/Skills/contents
+   - Agents: https://api.github.com/repos/Hashzin-0/Agents/contents
+
+2. Se remote encontrou:
+   - Baixa apenas o necessário (nome + description)
+   - Cache em .opencode/cache/remote-*.json
+   - USA para esta tarefa
+   
+3. Se remote também falhou → Camada 3
+```
+
+**Cache Remoto:**
+```
+- TTL: 1 hora
+- LRU eviction: 50 entries
+- Armazenar em .opencode/cache/remote-skills.json e remote-agents.json
+```
+
+### Camada 3: Web Search (P3)
+
+**Se Camada 1 + 2 falharam:**
+
+```
+1. Detectar o que é necessário:
+   - Ex: "React useEffect", "Zod schema validation"
+   
+2. Usar websearch (NÃO usar APIs externas!):
+   - Buscar em MDN para JavaScript/TypeScript
+   - Buscar em DevDocs.io para frameworks
+   - Buscar em ReadTheDocs para libraries
+   
+3. Se encontrou:
+   - Cache em .opencode/cache/docs-*.json
+   - Disponibiliza como contexto adicional
+   
+4. Se nada encontrado → Perguntar ao usuário
+```
+
+**Importante:**
+```
+- NÃO usar APIs externas (Exa, Algolia, etc.)
+- Usar apenas websearch para buscar documentação
+- Priorizar resultados oficiais (MDN, DevDocs, ReadTheDocs)
+```
+
+### Camada 4: Background Execution (P4)
+
+**Tudo executa em silêncio, sem explicit invocation:**
+
+```
+1. ANTES de executar qualquer agente:
+   → Executar automaticamente Pipeline P1 → P2 → P3
+   → Usuário não vê as buscas
+   
+2. Disponibilizar resultado como contexto adicional:
+   - Se encontrou skill/agent → incluir no prompt do agente
+   - Se encontrou docs → incluir como referência
+   
+3. Self-log para skill-improver:
+   - Se buscou e achou útil → marcar "hit"
+   - Se buscou e não achou → marcar "miss"
+   - Aprender para próximas vezes
+```
+
+**Fluxo Completo (silencioso):**
+```
+[User Request]
+       ↓
+[Background: Camada 1 - Local]
+       ↓ (miss)
+[Background: Camada 2 - Remote GitHub]
+       ↓ (miss)
+[Background: Camada 3 - Web Search]
+       ↓ (miss or found)
+[Entregar resultado + contexto ao agente]
+       ↓
+[Self-log → skill-improver]
+```
+
+---
+
+## 🔍 Discovery Protocol v2 (Legacy)
 
 ### Step 1: Check Persistent Cache (IndexedDB)
 

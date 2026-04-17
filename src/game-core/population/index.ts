@@ -6,3 +6,4 @@
 export * from './types';
 export * from './needs';
 export * from './employment';
+export * from './growth';
