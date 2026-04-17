@@ -26,7 +26,8 @@ export function hexEquals(a: HexCoords, b: HexCoords): boolean {
 }
 
 export function hexLength(hex: HexCoords): number {
-  return (Math.abs(hex.q) + Math.abs(hex.q + hex.r) + Math.abs(hex.r)) / 2;
+  const s = -hex.q - hex.r;
+  return (Math.abs(hex.q) + Math.abs(hex.r) + Math.abs(s)) / 2;
 }
 
 export function hexDistance(a: HexCoords, b: HexCoords): number {
